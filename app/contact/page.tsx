@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Loggedin_Navbar from "@/components/loggedin_Navbar";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -35,7 +35,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Loggedin_Navbar />
 
       <section className="py-12 px-8 md:px-16 lg:px-24">
         <div className="max-w-6xl mx-auto">

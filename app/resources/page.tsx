@@ -1,7 +1,14 @@
-import Navbar from "@/components/Navbar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+"use client";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Video, FileText } from "lucide-react";
+import Loggedin_Navbar from "@/components/loggedin_Navbar";
 
 const Resources = () => {
   const articles = [
@@ -45,13 +52,16 @@ const Resources = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
+      <Loggedin_Navbar />
+
       <section className="py-12 px-8 md:px-16 lg:px-24">
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-foreground mb-4">Pet Care Resources</h1>
+          <h1 className="text-5xl font-bold text-foreground mb-4">
+            Pet Care Resources
+          </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Learn everything you need to know about caring for your pet with our comprehensive guides and articles
+            Learn everything you need to know about caring for your pet with our
+            comprehensive guides and articles
           </p>
         </div>
 
@@ -59,7 +69,10 @@ const Resources = () => {
           {articles.map((article, index) => {
             const Icon = article.icon;
             return (
-              <Card key={index} className="hover:shadow-lg transition-shadow cursor-pointer">
+              <Card
+                key={index}
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -71,7 +84,9 @@ const Resources = () => {
                   <CardDescription>{article.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-primary hover:underline">Read More →</p>
+                  <p className="text-sm text-primary hover:underline">
+                    Read More →
+                  </p>
                 </CardContent>
               </Card>
             );
@@ -83,13 +98,14 @@ const Resources = () => {
             <CardHeader>
               <CardTitle className="text-2xl">Need More Help?</CardTitle>
               <CardDescription>
-                Can&apos;t find what you&apos;re looking for? Our community is here to help!
+                Can&apos;t find what you&apos;re looking for? Our community is
+                here to help!
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                Join our community forum to ask questions, share experiences, and connect 
-                with other pet owners and experts.
+                Join our community forum to ask questions, share experiences,
+                and connect with other pet owners and experts.
               </p>
             </CardContent>
           </Card>

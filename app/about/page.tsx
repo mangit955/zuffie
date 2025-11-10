@@ -1,4 +1,5 @@
-import Navbar from "@/components/Navbar";
+"use client";
+import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Heart, Users, Shield, Home } from "lucide-react";
 
@@ -32,7 +33,7 @@ const About = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Loggedin_Navbar />
 
       <section className="py-20 px-8 md:px-16 lg:px-24">
         <div className="max-w-4xl mx-auto text-center mb-16">
@@ -54,7 +55,7 @@ const About = () => {
               <Card key={index}>
                 <CardContent className="p-6">
                   <div className="flex gap-4">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                         <Icon className="h-6 w-6 text-primary" />
                       </div>
