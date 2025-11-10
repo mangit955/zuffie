@@ -1,11 +1,18 @@
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import Link from "next/link";
 
 const Navbar = () => {
   return (
     <nav className="flex items-center justify-between px-8 md:px-16 lg:px-24 py-6 bg-background border-b">
       <Link href="/" className="flex items-center gap-2">
-        <span className="text-3xl">🐾</span>
+        <Image
+          src="/logo.png"
+          alt="logo"
+          className="mr-2"
+          width={100}
+          height={100}
+        />
         <span className="text-2xl font-bold text-foreground">Zuffie</span>
       </Link>
 

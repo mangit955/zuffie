@@ -22,8 +22,10 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useProtectRoute } from "@/hooks/useProtectRoute";
 
 const Adopt = () => {
+  const { user, loading } = useProtectRoute();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -46,7 +48,7 @@ const Adopt = () => {
     });
     router.push("/dashboard");
   };
-
+  if (loading) return <p>Loading...</p>;
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
