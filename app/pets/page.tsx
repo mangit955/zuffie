@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import PetCard from "@/components/PetCard";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
+import Loggedin_Navbar from "@/components/loggedin_Navbar";
 
 const Pets = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -96,7 +96,7 @@ const Pets = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Loggedin_Navbar />
 
       <section className="py-12 px-8 md:px-16 lg:px-24">
         <div className="text-center mb-8">
