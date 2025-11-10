@@ -1,17 +1,33 @@
 "use client";
 import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle, Share2, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import Loggedin_Navbar from "@/components/loggedin_Navbar";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useEffect } from "react";
 
 const PetDetail = () => {
   const { id } = useParams() as { id: string };
   const router = useRouter();
+  const supabase = createClientComponentClient();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("/login");
+      }
+    };
+    checkSession();
+  }, [supabase, router]);
 
   // Mock pet data
   const pet = {
@@ -41,7 +57,7 @@ const PetDetail = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Loggedin_Navbar />
 
       <section className="py-12 px-8 md:px-16 lg:px-24">
         <div className="max-w-6xl mx-auto">

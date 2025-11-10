@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PetCard from "@/components/PetCard";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,11 +11,28 @@ import {
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
 
 const Pets = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterGender, setFilterGender] = useState("all");
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("/login");
+      }
+    };
+    checkSession();
+  }, [supabase, router]);
 
   const allPets = [
     {

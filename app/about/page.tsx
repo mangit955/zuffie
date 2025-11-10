@@ -1,9 +1,28 @@
 "use client";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { Card, CardContent } from "@/components/ui/card";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { Heart, Users, Shield, Home } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const About = () => {
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("/login");
+      }
+    };
+    checkSession();
+  }, [supabase, router]);
+
   const values = [
     {
       icon: Heart,

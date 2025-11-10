@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,8 +14,26 @@ import {
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
 
 const Contact = () => {
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("/login");
+      }
+    };
+    checkSession();
+  }, [supabase, router]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
