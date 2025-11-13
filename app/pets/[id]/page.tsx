@@ -11,7 +11,6 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect } from "react";
 
 const PetDetail = () => {
-  const { id } = useParams() as { id: string };
   const router = useRouter();
   const supabase = createClientComponentClient();
   const { toast } = useToast();

@@ -1,12 +1,13 @@
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
 
 export function useProtectRoute() {
   const supabase = createClientComponentClient();
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const checksession = async () => {
