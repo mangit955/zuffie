@@ -1,5 +1,5 @@
 "use client";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 
 const PetDetail = () => {
   // ✅ useParams and useRouter from Next.js
-  const { id } = useParams() as { id: string };
   const router = useRouter();
   const { toast } = useToast();
 

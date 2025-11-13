@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import { useProtectRoute } from "@/hooks/useProtectRoute";
 
 const Adopt = () => {
-  const { user, loading } = useProtectRoute();
+  const { loading } = useProtectRoute();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
