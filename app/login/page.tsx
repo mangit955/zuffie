@@ -18,6 +18,7 @@ const Login = () => {
       provider: "google",
       options: {
         queryParams: {
+          redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/pets`,
           access_type: "offline",
           prompt: "consent",
         },
