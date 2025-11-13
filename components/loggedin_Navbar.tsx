@@ -2,13 +2,15 @@ import { Button } from "@/components/ui/button";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const Loggedin_Navbar = () => {
   const supabase = createClientComponentClient();
+  const router = useRouter();
   const Logout = async () => {
     const { error } = await supabase.auth.signOut();
     // You may want to redirect after sign out explicitly if needed:
-    window.location.href = "/";
+    router.push("/");
 
     if (error) console.log("Error logging out:", error.message);
     else console.log("Redirecting...");
