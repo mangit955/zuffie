@@ -40,7 +40,7 @@ const Pets = () => {
       breed: "Golden Retriever",
       age: "2 years",
       gender: "Male",
-      emoji: "🐕",
+      image: "/gr.jpg",
       type: "dog",
     },
     {
@@ -48,7 +48,7 @@ const Pets = () => {
       breed: "Persian Cat",
       age: "1 year",
       gender: "Female",
-      emoji: "🐱",
+      image: "/persian.jpg",
       type: "cat",
     },
     {
@@ -56,7 +56,7 @@ const Pets = () => {
       breed: "Labrador",
       age: "3 years",
       gender: "Male",
-      emoji: "🐕",
+      image: "/lab.jpg",
       type: "dog",
     },
     {
@@ -64,7 +64,7 @@ const Pets = () => {
       breed: "Siamese Cat",
       age: "2 years",
       gender: "Female",
-      emoji: "🐱",
+      image: "/sc.jpg",
       type: "cat",
     },
     {
@@ -72,7 +72,7 @@ const Pets = () => {
       breed: "German Shepherd",
       age: "4 years",
       gender: "Male",
-      emoji: "🐕",
+      image: "/germen.jpg",
       type: "dog",
     },
     {
@@ -80,7 +80,7 @@ const Pets = () => {
       breed: "Beagle",
       age: "1 year",
       gender: "Male",
-      emoji: "🐕",
+      image: "/beagle.jpg",
       type: "dog",
     },
     {
@@ -88,7 +88,7 @@ const Pets = () => {
       breed: "British Shorthair",
       age: "3 years",
       gender: "Female",
-      emoji: "🐱",
+      image: "/bs.jpg",
       type: "cat",
     },
     {
@@ -96,7 +96,7 @@ const Pets = () => {
       breed: "Maine Coon",
       age: "2 years",
       gender: "Male",
-      emoji: "🐱",
+      image: "/mc.jpg",
       type: "cat",
     },
   ];

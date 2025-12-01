@@ -6,22 +6,26 @@ const Features = () => {
     {
       icon: <Heart className="h-8 w-8 text-accent" />,
       title: "Find Your Match",
-      description: "Browse through our loving pets and find the perfect companion for your family.",
+      description:
+        "Browse through our loving pets and find the perfect companion for your family.",
     },
     {
       icon: <Shield className="h-8 w-8 text-accent" />,
       title: "Safe & Verified",
-      description: "All pets are health-checked and verified by licensed veterinarians.",
+      description:
+        "All pets are health-checked and verified by licensed veterinarians.",
     },
     {
       icon: <MessageCircle className="h-8 w-8 text-accent" />,
       title: "Direct Communication",
-      description: "Chat directly with shelters and get all your questions answered instantly.",
+      description:
+        "Chat directly with shelters and get all your questions answered instantly.",
     },
     {
       icon: <Users className="h-8 w-8 text-accent" />,
       title: "Community Support",
-      description: "Join our caring community and get support throughout your adoption journey.",
+      description:
+        "Join our caring community and get support throughout your adoption journey.",
     },
   ];
 
@@ -32,13 +36,17 @@ const Features = () => {
           More Than Just Adoption
         </h2>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          We&apos;re committed to creating lasting bonds between pets and their families through comprehensive support and care.
+          We&apos;re committed to creating lasting bonds between pets and their
+          families through comprehensive support and care.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {features.map((feature, index) => (
-          <Card key={index} className="bg-card hover:shadow-lg transition-shadow">
+          <Card
+            key={index}
+            className="bg-card hover:shadow-lg transition-shadow"
+          >
             <CardHeader>
               <div className="mb-4 p-3 bg-secondary/30 rounded-full w-fit">
                 {feature.icon}

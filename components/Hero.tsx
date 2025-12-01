@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 const Hero = () => {
@@ -46,8 +47,8 @@ const Hero = () => {
       {/* Hero Image Placeholder - would use actual pet images */}
       <div className="hidden lg:flex flex-1 justify-end items-center">
         <div className="relative">
-          <div className="w-96 h-96 rounded-full bg-gradient-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
-            <span className="text-9xl">🐕</span>
+          <div className="w-96 h-96 rounded-full bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
+            <Image src="/d.png" alt="Dog" width={500} height={500} />
           </div>
         </div>
       </div>

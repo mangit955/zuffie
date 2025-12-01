@@ -3,20 +3,26 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Heart } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface PetCardProps {
   name: string;
   breed: string;
   age: string;
   gender: string;
-  emoji: string;
+  emoji?: string;
+  image?: string;
 }
 
-const PetCard = ({ name, breed, age, gender, emoji }: PetCardProps) => {
+const PetCard = ({ name, breed, age, gender, image, emoji }: PetCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow bg-card">
       <div className="relative h-48 bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
-        <span className="text-8xl">{emoji}</span>
+        {image ? (
+          <Image src={image} alt={name} fill className="object-cover" />
+        ) : (
+          <span className="text-8xl">{emoji}</span>
+        )}
         <Button
           size="icon"
           variant="ghost"

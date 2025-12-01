@@ -16,28 +16,28 @@ const pets = [
     breed: "Golden Retriever",
     age: "2 years",
     gender: "Male",
-    emoji: "🐕",
+    image: "/gr.jpg",
   },
   {
     name: "Luna",
     breed: "Persian Cat",
     age: "1 year",
     gender: "Female",
-    emoji: "🐱",
+    image: "/persian.jpg",
   },
   {
     name: "Charlie",
     breed: "Labrador",
     age: "3 years",
     gender: "Male",
-    emoji: "🐕",
+    image: "/lab.jpg",
   },
   {
     name: "Bella",
     breed: "Siamese Cat",
     age: "2 years",
     gender: "Female",
-    emoji: "🐱",
+    image: "/sc.jpg",
   },
 ];
 
