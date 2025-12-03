@@ -17,6 +17,7 @@ import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import Loggedin_Navbar from "@/components/loggedin_Navbar";
 
 type AdoptionApplication = {
   id: string;
@@ -107,7 +108,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      {/* Navbar based on auth */}
+      {user ? <Loggedin_Navbar /> : <Navbar />}
 
       <section className="py-12 px-8 md:px-16 lg:px-24">
         <div className="max-w-6xl mx-auto">
