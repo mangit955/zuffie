@@ -1,5 +1,5 @@
 "use client";
-import { useParams } from "next/navigation";
+
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect } from "react";
+import Image from "next/image";
 
 const PetDetail = () => {
   const router = useRouter();
@@ -34,7 +35,6 @@ const PetDetail = () => {
     breed: "Golden Retriever",
     age: "2 years",
     gender: "Male",
-    emoji: "🐕",
     weight: "30 kg",
     color: "Golden",
     location: "Happy Paws Shelter, New York",
@@ -63,8 +63,8 @@ const PetDetail = () => {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Pet Image */}
             <div className="relative">
-              <div className="w-full h-96 rounded-2xl bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
-                <span className="text-[200px]">{pet.emoji}</span>
+              <div className="w-full h-100 rounded-2xl bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
+                <Image src="/gr.jpg" alt="Dog" width={300} height={300} />
               </div>
               <div className="absolute top-4 right-4 flex gap-2">
                 <Button

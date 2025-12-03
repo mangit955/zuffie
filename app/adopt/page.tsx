@@ -23,9 +23,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useProtectRoute } from "@/hooks/useProtectRoute";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 const Adopt = () => {
   const { loading } = useProtectRoute();
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -40,15 +42,80 @@ const Adopt = () => {
   const { toast } = useToast();
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Application Submitted!",
-      description: "We'll review your application and get back to you soon.",
-    });
-    router.push("/dashboard");
+    setSubmitting(true);
+
+    try {
+      const supabase = createSupabaseClient();
+
+      // optional: get loggedin user id from supabase
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError) {
+        console.error(userError);
+        toast({
+          title: "Authentication error",
+          description: "Please log in again before applying.",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      const { error } = await supabase.from("adoption_applications").insert({
+        user_id: user?.id ?? null,
+        full_name: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        housing_type: formData.housingType,
+        has_yard: formData.hasYard,
+        has_other_pets: formData.hasOtherPets,
+        experience: formData.experience,
+        why_adopt: formData.whyAdopt,
+        status: "pending",
+      });
+
+      if (error) {
+        console.error("Supabase insert error:", {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code,
+        });
+
+        toast({
+          title: "Could not submit application",
+          description: "Please try again in a moment.",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      toast({
+        title: "Application Submitted!",
+        description: "We'll review your application and get back to you soon.",
+      });
+
+      router.push("/dashboard");
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: "Unexpected error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
   if (loading) return <p>Loading...</p>;
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -202,8 +269,13 @@ const Adopt = () => {
                   />
                 </div>
 
-                <Button type="submit" size="lg" className="w-full">
-                  Submit Application
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "Submit Application"}
                 </Button>
               </form>
             </CardContent>
