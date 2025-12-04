@@ -36,6 +36,7 @@ const Pets = () => {
 
   const allPets = [
     {
+      id: "max",
       name: "Max",
       breed: "Golden Retriever",
       age: "2 years",
@@ -44,6 +45,7 @@ const Pets = () => {
       type: "dog",
     },
     {
+      id: "luna",
       name: "Luna",
       breed: "Persian Cat",
       age: "1 year",
@@ -52,6 +54,7 @@ const Pets = () => {
       type: "cat",
     },
     {
+      id: "charlie",
       name: "Charlie",
       breed: "Labrador",
       age: "3 years",
@@ -60,6 +63,7 @@ const Pets = () => {
       type: "dog",
     },
     {
+      id: "bella",
       name: "Bella",
       breed: "Siamese Cat",
       age: "2 years",
@@ -68,6 +72,7 @@ const Pets = () => {
       type: "cat",
     },
     {
+      id: "rocky",
       name: "Rocky",
       breed: "German Shepherd",
       age: "4 years",
@@ -76,6 +81,7 @@ const Pets = () => {
       type: "dog",
     },
     {
+      id: "milo",
       name: "Milo",
       breed: "Beagle",
       age: "1 year",
@@ -84,6 +90,7 @@ const Pets = () => {
       type: "dog",
     },
     {
+      id: "daisy",
       name: "Daisy",
       breed: "British Shorthair",
       age: "3 years",
@@ -92,6 +99,7 @@ const Pets = () => {
       type: "cat",
     },
     {
+      id: "oliver",
       name: "Oliver",
       breed: "Maine Coon",
       age: "2 years",
