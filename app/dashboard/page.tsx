@@ -35,6 +35,58 @@ type AdoptionApplication = {
   created_at: string;
 };
 
+type FavouritePets = {
+  id: string;
+  user_id: string | null;
+  pet_id: string;
+  created_at: string;
+};
+
+const PETS_BY_ID: Record<
+  string,
+  {
+    id: string;
+    name: string;
+    breed: string;
+    age: string;
+    gender: string;
+    image: string;
+  }
+> = {
+  max: {
+    id: "max",
+    name: "Max",
+    breed: "Golden REtriever",
+    age: "2 years",
+    gender: "Male",
+    image: "/gr.jpg",
+  },
+  luna: {
+    id: "luna",
+    name: "Luna",
+    breed: "Persian Cat",
+    age: "1 years",
+    gender: "Female",
+    image: "/persian.jpg",
+  },
+  charlie: {
+    id: "charlie",
+    name: "Charlie",
+    breed: "Labrador",
+    age: "3 years",
+    gender: "Male",
+    image: "/lab.jpg",
+  },
+  bella: {
+    id: "bella",
+    name: "Bella",
+    breed: "Siamese Cat",
+    age: "2 years",
+    gender: "Female",
+    image: "/sc.jpg",
+  },
+};
+
 const Dashboard = () => {
   const supabase = createClientComponentClient();
   const { toast } = useToast();
@@ -43,9 +95,10 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
   const [loadingApplications, setLoadingApplications] = useState(true);
+  const [favorite, setFavorite] = useState<FavouritePets[]>([]);
+  const [loadingFavorite, setLoadingFavorite] = useState(true);
 
   // 1) Load current user
-
   useEffect(() => {
     const loadUser = async () => {
       const {
@@ -83,7 +136,7 @@ const Dashboard = () => {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetchong applications:", error);
+        console.error("Error fetching applications:", error);
         toast({
           title: "Error loading applications",
           description: error.message,
@@ -97,10 +150,33 @@ const Dashboard = () => {
     loadApplications();
   }, [supabase, user, toast]);
 
-  const favorites = [
-    { name: "Max", breed: "Golden Retriever", emoji: "🐕" },
-    { name: "Luna", breed: "Persian Cat", emoji: "🐱" },
-  ];
+  //3) load their favourite pets
+  useEffect(() => {
+    if (!user) return;
+    const loadFavoritePets = async () => {
+      setLoadingFavorite(true);
+
+      const { data, error } = await supabase
+        .from("favorites")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching favorite pets:", error);
+
+        toast({
+          title: "Error loading favorite Pets",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setFavorite(data || []);
+      }
+      setLoadingFavorite(false);
+    };
+    loadFavoritePets();
+  }, [supabase, user, toast]);
 
   const appointments = [
     { pet: "Max", shelter: "Happy Paws", date: "2025-10-25", time: "2:00 PM" },
@@ -143,22 +219,61 @@ const Dashboard = () => {
             </TabsList>
 
             <TabsContent value="favorites" className="space-y-4">
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {favorites.map((pet, index) => (
-                  <Card key={index}>
-                    <CardHeader>
-                      <div className="text-6xl text-center mb-2">
-                        {pet.emoji}
-                      </div>
-                      <CardTitle>{pet.name}</CardTitle>
-                      <CardDescription>{pet.breed}</CardDescription>
-                    </CardHeader>
+              {loadingFavorite ? (
+                <p className="text-muted-foreground">
+                  Loading your favorite Pets
+                </p>
+              ) : favorite.length === 0 ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>No favourites yet</CardTitle>
+                    <CardDescription>
+                      you haven&apos;t liked any pets yet.
+                    </CardDescription>
                     <CardContent>
-                      <Button className="w-full">View Details</Button>
+                      <Button onClick={() => router.push("/")}>
+                        Find your Pet
+                      </Button>
                     </CardContent>
-                  </Card>
-                ))}
-              </div>
+                  </CardHeader>
+                </Card>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {favorite.map((fav) => {
+                    const pet = PETS_BY_ID[fav.pet_id];
+
+                    //In case a pet_id does't exist in our map (defensive check)
+                    if (!pet) return null;
+
+                    return (
+                      <Card key={fav.id}>
+                        <CardHeader>
+                          <div className="text-6xl text-center mb-2">
+                            {/* if you had emojis you could put them here; for now just text */}
+                            {/* Or show image instead in CardContent */}
+                          </div>
+                          <CardTitle>{pet.name}</CardTitle>
+                          <CardDescription>{pet.breed}</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                          <p className="text-sm text-muted-foreground">
+                            Age: {pet.age}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Gender: {pet.gender}
+                          </p>
+                          <Button
+                            className="w-full"
+                            onClick={() => router.push(`/pets/${pet.id}`)}
+                          >
+                            View Details
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="applications" className="space-y-4">
