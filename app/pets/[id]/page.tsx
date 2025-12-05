@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,14 +8,36 @@ import { Heart, MessageCircle, Share2, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
+
+type Pet = {
+  id: string;
+  name: string;
+  breed: string;
+  age: number;
+  gender: string;
+  weight: string | null;
+  color: string | null;
+  location: string | null;
+  description: string | null;
+  health_status: string | null;
+  vaccinated: string | null;
+  neutered: string | null;
+  personality: string[] | null;
+  image_url: string | null;
+};
 
 const PetDetail = () => {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
+  const petId = params.id; //comes form /pets/[id]
   const supabase = createClientComponentClient();
   const { toast } = useToast();
 
+  const [pet, setPet] = useState<Pet | null>(null);
+  const [loading, setLoading] = useState(true);
+  //check session
   useEffect(() => {
     const checkSession = async () => {
       const {
@@ -29,22 +51,44 @@ const PetDetail = () => {
     checkSession();
   }, [supabase, router]);
 
-  // Mock pet data
-  const pet = {
-    name: "Max",
-    breed: "Golden Retriever",
-    age: "2 years",
-    gender: "Male",
-    weight: "30 kg",
-    color: "Golden",
-    location: "Happy Paws Shelter, New York",
-    description:
-      "Max is a friendly and energetic Golden Retriever who loves to play fetch and go on long walks. He's great with children and other pets. Max is fully vaccinated and neutered.",
-    healthStatus: "Excellent",
-    vaccinated: "Yes",
-    neutered: "Yes",
-    personality: ["Friendly", "Energetic", "Playful", "Good with kids"],
-  };
+  //2) fetch pet by id from supabase
+  useEffect(() => {
+    const loadPet = async () => {
+      if (!petId) return;
+      setLoading(true);
+
+      const { data, error } = await supabase
+        .from("pets")
+        .select("*")
+        .eq("id", petId)
+        .maybeSingle();
+
+      if (!data) {
+        toast({
+          title: "Pet not Found",
+          description: "The Pet you have been looking for does not exist.",
+          variant: "destructive",
+        });
+        router.push("/");
+        return;
+      }
+
+      if (error) {
+        console.error("Error fetching the pet", error);
+        toast({
+          title: "Error fetching pet:",
+          description: error.message,
+          variant: "destructive",
+        });
+        router.push("/");
+        return;
+      }
+
+      setPet(data as Pet);
+      setLoading(false);
+    };
+    loadPet();
+  }, [supabase, petId, toast, router]);
 
   const handleAdopt = () => {
     router.push("/adopt");
@@ -53,6 +97,17 @@ const PetDetail = () => {
       description: "Please fill out the adoption form to proceed.",
     });
   };
+
+  if (loading || !pet) {
+    return (
+      <div className=" min-h-screen bg-background">
+        <Loggedin_Navbar />
+        <section className="py-12 px-8 md:px-16 lg:px-24">
+          <p>Loading pet details...</p>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,7 +119,13 @@ const PetDetail = () => {
             {/* Pet Image */}
             <div className="relative">
               <div className="w-full h-100 rounded-2xl bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
-                <Image src="/gr.jpg" alt="Dog" width={300} height={300} />
+                <Image
+                  src={pet.image_url || "/placeholder.jpg"}
+                  alt={pet.name}
+                  width={300}
+                  height={300}
+                  className="rounded-2xl object-cover"
+                />
               </div>
               <div className="absolute top-4 right-4 flex gap-2">
                 <Button
@@ -118,7 +179,9 @@ const PetDetail = () => {
                 <CardContent className="p-6 space-y-4">
                   <div>
                     <h3 className="font-semibold mb-2">About {pet.name}</h3>
-                    <p className="text-muted-foreground">{pet.description}</p>
+                    <p className="text-muted-foreground">
+                      {pet.description ?? "Not Specified"}
+                    </p>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -126,24 +189,30 @@ const PetDetail = () => {
                       <p className="text-sm text-muted-foreground">
                         Health Status
                       </p>
-                      <p className="font-medium">{pet.healthStatus}</p>
+                      <p className="font-medium">
+                        {pet.health_status ?? "Not Specified"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">
                         Vaccinated
                       </p>
-                      <p className="font-medium">{pet.vaccinated}</p>
+                      <p className="font-medium">
+                        {pet.vaccinated ?? "Not specified"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Neutered</p>
-                      <p className="font-medium">{pet.neutered}</p>
+                      <p className="font-medium">
+                        {pet.neutered ?? "Not Specified"}
+                      </p>
                     </div>
                   </div>
 
                   <div>
                     <h3 className="font-semibold mb-2">Personality</h3>
                     <div className="flex gap-2 flex-wrap">
-                      {pet.personality.map((trait, index) => (
+                      {pet.personality?.map((trait, index) => (
                         <Badge key={index} variant="outline">
                           {trait}
                         </Badge>
