@@ -35,56 +35,19 @@ type AdoptionApplication = {
   created_at: string;
 };
 
-type FavouritePets = {
+type FavouriteWithPet = {
   id: string;
   user_id: string | null;
   pet_id: string;
   created_at: string;
-};
-
-const PETS_BY_ID: Record<
-  string,
-  {
+  pets: {
     id: string;
     name: string;
     breed: string;
     age: string;
     gender: string;
-    image: string;
-  }
-> = {
-  max: {
-    id: "max",
-    name: "Max",
-    breed: "Golden REtriever",
-    age: "2 years",
-    gender: "Male",
-    image: "/gr.jpg",
-  },
-  luna: {
-    id: "luna",
-    name: "Luna",
-    breed: "Persian Cat",
-    age: "1 years",
-    gender: "Female",
-    image: "/persian.jpg",
-  },
-  charlie: {
-    id: "charlie",
-    name: "Charlie",
-    breed: "Labrador",
-    age: "3 years",
-    gender: "Male",
-    image: "/lab.jpg",
-  },
-  bella: {
-    id: "bella",
-    name: "Bella",
-    breed: "Siamese Cat",
-    age: "2 years",
-    gender: "Female",
-    image: "/sc.jpg",
-  },
+    image_url: string;
+  };
 };
 
 const Dashboard = () => {
@@ -95,7 +58,7 @@ const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
   const [loadingApplications, setLoadingApplications] = useState(true);
-  const [favorite, setFavorite] = useState<FavouritePets[]>([]);
+  const [favorite, setFavorite] = useState<FavouriteWithPet[]>([]);
   const [loadingFavorite, setLoadingFavorite] = useState(true);
 
   // 1) Load current user
@@ -153,28 +116,45 @@ const Dashboard = () => {
   //3) load their favourite pets
   useEffect(() => {
     if (!user) return;
+
     const loadFavoritePets = async () => {
       setLoadingFavorite(true);
 
       const { data, error } = await supabase
         .from("favorites")
-        .select("*")
+        .select(
+          `
+          id,
+          user_id,
+          pet_id,
+          created_at,
+          pets (
+            id,
+            name,
+            breed,
+            age,
+            gender,
+            image_url
+          )
+        `
+        )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error fetching favorite pets:", error);
-
         toast({
-          title: "Error loading favorite Pets",
+          title: "Error loading favorite pets",
           description: error.message,
           variant: "destructive",
         });
       } else {
-        setFavorite(data || []);
+        setFavorite((data || []) as FavouriteWithPet[]);
       }
+
       setLoadingFavorite(false);
     };
+
     loadFavoritePets();
   }, [supabase, user, toast]);
 
@@ -240,7 +220,7 @@ const Dashboard = () => {
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {favorite.map((fav) => {
-                    const pet = PETS_BY_ID[fav.pet_id];
+                    const pet = fav.pets; //joined pet row
 
                     //In case a pet_id does't exist in our map (defensive check)
                     if (!pet) return null;
