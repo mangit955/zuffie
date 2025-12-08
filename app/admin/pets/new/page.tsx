@@ -34,6 +34,7 @@ const NewPetPage = () => {
   const { loading: authLoading } = useProtectRoute(); // optional, if you use this elsewhere
 
   const [submitting, setSubmitting] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -86,6 +87,42 @@ const NewPetPage = () => {
         return;
       }
 
+      //1) REQUIRE an image file (you can make this optional if you want)
+      if (!imageFile) {
+        toast({
+          title: "No image selected",
+          description: "Please upload an image for this pet.",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      // 2) Upload image to Supabase Storage
+      const fileExt = imageFile.name.split(".").pop();
+      const fileName = `${generatedId}-${Date.now()}.${fileExt}`;
+      const filePath = fileName;
+
+      const { error: uploadError } = await supabase.storage
+        .from("pet-images")
+        .upload(filePath, imageFile);
+
+      if (uploadError) {
+        console.error("Error uploading image:", uploadError);
+        toast({
+          title: "Image Upload Failed",
+          description: uploadError.message,
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      //3) Get public URL of uploaded image
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("pet-images").getPublicUrl(filePath);
+
       // Convert comma-separated personality string → array
       const personalityArray =
         formData.personality
@@ -107,7 +144,7 @@ const NewPetPage = () => {
         vaccinated: formData.vaccinated || null,
         neutered: formData.neutered || null,
         personality: personalityArray,
-        image_url: formData.image_url || null,
+        image_url: publicUrl,
       });
 
       if (error) {
@@ -370,23 +407,20 @@ const NewPetPage = () => {
                   </p>
                 </div>
 
-                {/* Image URL */}
+                {/* Pet Image */}
                 <div className="space-y-2">
                   <Label htmlFor="image_url">Image URL</Label>
                   <Input
                     id="image_url"
-                    placeholder="/gr.jpg or https://..."
-                    value={formData.image_url}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        image_url: e.target.value,
-                      }))
-                    }
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setImageFile(file);
+                    }}
                   />
                   <p className="text-xs text-muted-foreground">
-                    For now, paste a URL or relative path. Later you can add
-                    real file uploads with Supabase Storage.
+                    Upload an image for this pet
                   </p>
                 </div>
 

@@ -30,6 +30,7 @@ const PetCard = ({
   image,
   emoji,
 }: PetCardProps) => {
+  //console.log("PetCard image src for", name, ":", image);
   const supabase = createClientComponentClient();
   const { toast } = useToast();
 
@@ -132,7 +133,13 @@ const PetCard = ({
     <Card className="overflow-hidden hover:shadow-lg transition-shadow bg-card">
       <div className="relative h-48 bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
         {image ? (
-          <Image src={image} alt={name} fill className="object-cover" />
+          <Image
+            src={image}
+            alt={name}
+            fill
+            className="object-cover"
+            unoptimized
+          />
         ) : (
           <span className="text-8xl">{emoji}</span>
         )}

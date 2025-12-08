@@ -35,10 +35,10 @@ const Hero = () => {
               Adopt Now
             </Button>
           </Link>
-          <Link href="/contact">
+          <Link href="/admin/pets/new">
             <Button size="lg" variant="outline" className="border-2">
               <MessageCircle className="mr-2 h-5 w-5" />
-              Chat with Shelter
+              Post adoption request
             </Button>
           </Link>
         </div>

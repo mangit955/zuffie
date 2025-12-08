@@ -14,13 +14,26 @@ import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 
+type DbPet = {
+  id: string;
+  name: string;
+  breed: string;
+  age: string;
+  gender: string;
+  image_url: string;
+  type: string; //"dog | "cat"
+};
+
 const Pets = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterGender, setFilterGender] = useState("all");
+  const [pets, setPets] = useState<DbPet[]>([]);
+  const [loadingPets, setLoadingPets] = useState(true);
   const supabase = createClientComponentClient();
   const router = useRouter();
 
+  // 1) Protect route: require session
   useEffect(() => {
     const checkSession = async () => {
       const {
@@ -34,82 +47,29 @@ const Pets = () => {
     checkSession();
   }, [supabase, router]);
 
-  const allPets = [
-    {
-      id: "max",
-      name: "Max",
-      breed: "Golden Retriever",
-      age: "2 years",
-      gender: "Male",
-      image: "/gr.jpg",
-      type: "dog",
-    },
-    {
-      id: "luna",
-      name: "Luna",
-      breed: "Persian Cat",
-      age: "1 year",
-      gender: "Female",
-      image: "/persian.jpg",
-      type: "cat",
-    },
-    {
-      id: "charlie",
-      name: "Charlie",
-      breed: "Labrador",
-      age: "3 years",
-      gender: "Male",
-      image: "/lab.jpg",
-      type: "dog",
-    },
-    {
-      id: "bella",
-      name: "Bella",
-      breed: "Siamese Cat",
-      age: "2 years",
-      gender: "Female",
-      image: "/sc.jpg",
-      type: "cat",
-    },
-    {
-      id: "rocky",
-      name: "Rocky",
-      breed: "German Shepherd",
-      age: "4 years",
-      gender: "Male",
-      image: "/germen.jpg",
-      type: "dog",
-    },
-    {
-      id: "milo",
-      name: "Milo",
-      breed: "Beagle",
-      age: "1 year",
-      gender: "Male",
-      image: "/beagle.jpg",
-      type: "dog",
-    },
-    {
-      id: "daisy",
-      name: "Daisy",
-      breed: "British Shorthair",
-      age: "3 years",
-      gender: "Female",
-      image: "/bs.jpg",
-      type: "cat",
-    },
-    {
-      id: "oliver",
-      name: "Oliver",
-      breed: "Maine Coon",
-      age: "2 years",
-      gender: "Male",
-      image: "/mc.jpg",
-      type: "cat",
-    },
-  ];
+  // 2) Load pets from Supabase
+  useEffect(() => {
+    const loadPets = async () => {
+      setLoadingPets(true);
 
-  const filteredPets = allPets.filter((pet) => {
+      const { data, error } = await supabase
+        .from("pets")
+        .select("id, name, breed, age, gender, image_url, type")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error loading pets:", error);
+        setPets([]);
+      } else {
+        setPets(data || []);
+      }
+      setLoadingPets(false);
+    };
+    loadPets();
+  }, [supabase]);
+
+  // 3) Apply search + filters in memory
+  const filteredPets = pets.filter((pet) => {
     const matchesSearch =
       pet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       pet.breed.toLowerCase().includes(searchTerm.toLowerCase());
@@ -172,8 +132,16 @@ const Pets = () => {
 
         {/* Pet Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredPets.map((pet, index) => (
-            <PetCard key={index} {...pet} />
+          {filteredPets.map((pet) => (
+            <PetCard
+              key={pet.id}
+              id={pet.id}
+              name={pet.name}
+              breed={pet.breed}
+              age={pet.age}
+              gender={pet.gender}
+              image={pet.image_url || "/placeholder.jpg"}
+            />
           ))}
         </div>
 
