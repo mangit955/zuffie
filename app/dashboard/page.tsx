@@ -47,7 +47,7 @@ type FavouriteWithPet = {
     age: string;
     gender: string;
     image_url: string;
-  };
+  } | null;
 };
 
 const Dashboard = () => {
@@ -149,7 +149,15 @@ const Dashboard = () => {
           variant: "destructive",
         });
       } else {
-        setFavorite((data || []) as FavouriteWithPet[]);
+        const normalizedFavorites: FavouriteWithPet[] = (data || []).map(
+          (fav: any) => ({
+            ...fav,
+            // Supabase returns joined rows as arrays; grab first or null
+            pets: Array.isArray(fav.pets) ? fav.pets[0] ?? null : fav.pets,
+          })
+        );
+
+        setFavorite(normalizedFavorites);
       }
 
       setLoadingFavorite(false);

@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Star, RefreshCcw } from "lucide-react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useRouter } from "next/navigation";
 
 type Vet = {
   id: string;
@@ -27,6 +29,22 @@ const VetsNearMePage = () => {
   const [vets, setVets] = useState<Vet[]>([]);
   const [loading, setLoading] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
+  const router = useRouter();
+
+  // 1) Protect route: require session
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session) {
+        router.push("/login");
+      }
+    };
+    checkSession();
+  }, [supabase, router]);
 
   const fetchVets = () => {
     setLocationError(null);
