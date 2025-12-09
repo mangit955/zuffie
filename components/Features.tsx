@@ -45,7 +45,7 @@ const Features = () => {
         {features.map((feature, index) => (
           <Card
             key={index}
-            className="bg-card hover:shadow-lg transition-shadow"
+            className="bg-card/80 shadow-md hover:shadow-lg transition-shadow duration-300 "
           >
             <CardHeader>
               <div className="mb-4 p-3 bg-secondary/30 rounded-full w-fit">

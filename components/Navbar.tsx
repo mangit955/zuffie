@@ -16,7 +16,7 @@ const Navbar = () => {
         <span className="text-2xl font-bold text-foreground">Zuffie</span>
       </Link>
 
-      <div className="hidden md:flex items-center gap-8">
+      {/* <div className="hidden md:flex items-center gap-8">
         <Link
           href="/"
           className="text-foreground hover:text-primary transition-colors font-medium"
@@ -47,7 +47,7 @@ const Navbar = () => {
         >
           Nearby Veterinaries
         </Link>
-      </div>
+      </div> */}
 
       <Link href="/login">
         <Button className="bg-accent hover:bg-accent/90">Get Started</Button>

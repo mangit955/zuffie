@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-*: initial;
+  /* --color-*: initial; */
   --color-background: hsl(35 40% 96%);
   --color-foreground: hsl(160 35% 25%);
   --color-primary: hsl(160 45% 35%);
@@ -25,11 +25,46 @@
 }
 
 @layer base {
-  * {
+  /* * {
     border-style: solid;
-  }
+  } */
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+.shine-button {
+  position: relative;
+  overflow: hidden;
+}
+@layer utilities {
+  .shine-button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.5) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-20deg);
+  }
+
+  .shine-button:hover::before {
+    animation: shine 1.2s ease-in-out;
+  }
+
+  @keyframes shine {
+    0% {
+      left: -100%;
+    }
+    100% {
+      left: 150%;
+    }
   }
 }

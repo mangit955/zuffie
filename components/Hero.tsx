@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { AnimatedAdoptButton } from "./animated-adopt-button";
+import FloatingPet from "./FloatingPet";
 
 const Hero = () => {
   return (
@@ -31,12 +33,10 @@ const Hero = () => {
         </p>
         <div className="flex gap-4">
           <Link href="/pets">
-            <Button size="lg" className="bg-accent hover:bg-accent/90">
-              Adopt Now
-            </Button>
+            <AnimatedAdoptButton />
           </Link>
           <Link href="/admin/pets/new">
-            <Button size="lg" variant="outline" className="border-2">
+            <Button size="lg" variant="outline" className="border-2 bg-white">
               <MessageCircle className="mr-2 h-5 w-5" />
               Post adoption request
             </Button>
@@ -46,11 +46,7 @@ const Hero = () => {
 
       {/* Hero Image Placeholder - would use actual pet images */}
       <div className="hidden lg:flex flex-1 justify-end items-center">
-        <div className="relative">
-          <div className="w-96 h-96 rounded-full bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
-            <Image src="/d.png" alt="Dog" width={500} height={500} />
-          </div>
-        </div>
+        <FloatingPet />
       </div>
 
       {/* Curved bottom edge */}

@@ -2,9 +2,8 @@
 
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import PetCard from "@/components/PetCard";
+import PetCard_1 from "@/components/PetCard_1";
 import Features from "@/components/Features";
-import ChatWidget from "@/components/ChatWidget";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { useEffect, useState } from "react";
@@ -12,6 +11,7 @@ import type { User } from "@supabase/supabase-js";
 
 const pets = [
   {
+    id: "max",
     name: "Max",
     breed: "Golden Retriever",
     age: "2 years",
@@ -19,6 +19,7 @@ const pets = [
     image: "/gr.jpg",
   },
   {
+    id: "luna",
     name: "Luna",
     breed: "Persian Cat",
     age: "1 year",
@@ -26,6 +27,7 @@ const pets = [
     image: "/persian.jpg",
   },
   {
+    id: "charlie",
     name: "Charlie",
     breed: "Labrador",
     age: "3 years",
@@ -33,6 +35,7 @@ const pets = [
     image: "/lab.jpg",
   },
   {
+    id: "bella",
     name: "Bella",
     breed: "Siamese Cat",
     age: "2 years",
@@ -87,7 +90,7 @@ export default function Index() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {pets.map((pet, index) => (
-            <PetCard key={index} {...pet} />
+            <PetCard_1 key={index} {...pet} />
           ))}
         </div>
       </section>
@@ -102,9 +105,6 @@ export default function Index() {
           home
         </p>
       </section>
-
-      {/* Chat Widget */}
-      <ChatWidget />
     </div>
   );
 }
