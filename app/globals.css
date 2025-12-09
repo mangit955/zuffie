@@ -1,26 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  /* --color-*: initial; */
-  --color-background: hsl(35 40% 96%);
-  --color-foreground: hsl(160 35% 25%);
-  --color-primary: hsl(160 45% 35%);
+  --color-background: hsl(210 40% 98%);
+  --color-foreground: hsl(222 47% 11%);
+
+  --color-primary: hsl(200 90% 45%); /* Fresh sky blue */
   --color-primary-foreground: hsl(0 0% 98%);
-  --color-secondary: hsl(15 70% 80%);
-  --color-secondary-foreground: hsl(160 35% 25%);
-  --color-muted: hsl(35 30% 92%);
-  --color-muted-foreground: hsl(160 15% 45%);
-  --color-accent: hsl(25 85% 60%);
+
+  --color-accent: hsl(15 90% 60%); /* Warm peach */
   --color-accent-foreground: hsl(0 0% 98%);
+
+  --color-secondary: hsl(180 60% 88%); /* Aqua pastel */
+  --color-secondary-foreground: hsl(222 47% 11%);
+
+  --color-muted: hsl(200 30% 94%);
+  --color-muted-foreground: hsl(215 15% 45%);
+
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(160 35% 25%);
+  --color-card-foreground: hsl(222 47% 11%);
+
   --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(160 35% 25%);
-  --color-destructive: hsl(0 84.2% 60.2%);
-  --color-destructive-foreground: hsl(210 40% 98%);
-  --color-border: hsl(35 25% 88%);
-  --color-input: hsl(35 25% 88%);
-  --color-ring: hsl(160 45% 35%);
+  --color-popover-foreground: hsl(222 47% 11%);
+
+  --color-border: hsl(200 15% 85%);
+  --color-input: hsl(200 15% 85%);
+
+  --color-ring: hsl(200 90% 45%);
   --radius: 1rem;
 }
 
@@ -56,7 +61,7 @@
   }
 
   .shine-button:hover::before {
-    animation: shine 1.2s ease-in-out;
+    animation: shine 1s ease-in-out;
   }
 
   @keyframes shine {
