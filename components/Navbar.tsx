@@ -42,10 +42,10 @@ const Navbar = () => {
           Resources
         </Link>
         <Link
-          href="/contact"
+          href="/vets-near-me"
           className="text-foreground hover:text-primary transition-colors font-medium"
         >
-          Contact
+          Nearby Veterinaries
         </Link>
       </div>
 
