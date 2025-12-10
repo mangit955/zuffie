@@ -3,17 +3,24 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+// ⚡ Create Supabase client once per file, not on every render
+const supabase = createClientComponentClient();
 
 const Loggedin_Navbar = () => {
-  const supabase = createClientComponentClient();
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+
   const Logout = async () => {
+    if (loading) return;
+    setLoading(true);
+
     const { error } = await supabase.auth.signOut();
-    // You may want to redirect after sign out explicitly if needed:
+
     router.push("/");
 
     if (error) console.log("Error logging out:", error.message);
-    else console.log("Redirecting...");
   };
 
   return (
@@ -30,43 +37,29 @@ const Loggedin_Navbar = () => {
       </Link>
 
       <div className="hidden md:flex items-center gap-8">
-        <Link
-          href="/"
-          className="text-foreground hover:text-primary transition-colors font-medium"
-        >
-          Home
+        <Link href="/dashboard" className="nav-link">
+          Dashboard
         </Link>
-        <Link
-          href="/pets"
-          className="text-foreground hover:text-primary transition-colors font-medium"
-        >
+        <Link href="/pets" className="nav-link">
           Adopt
         </Link>
-        <Link
-          href="/about"
-          className="text-foreground hover:text-primary transition-colors font-medium"
-        >
+        <Link href="/about" className="nav-link">
           About
         </Link>
-        <Link
-          href="/resources"
-          className="text-foreground hover:text-primary transition-colors font-medium"
-        >
+        <Link href="/resources" className="nav-link">
           Resources
         </Link>
-        <Link
-          href="/vets-near-me"
-          className="text-foreground hover:text-primary transition-colors font-medium"
-        >
+        <Link href="/vets-near-me" className="nav-link">
           Nearby Veterinaries
         </Link>
       </div>
 
       <Button
         onClick={Logout}
-        className="bg-accent border-2  border-accent hover:bg-accent/90 shadow-md "
+        disabled={loading}
+        className="bg-accent border-2 border-accent hover:bg-accent/90 shadow-md"
       >
-        Log out
+        {loading ? "Logging out..." : "Log out"}
       </Button>
     </nav>
   );

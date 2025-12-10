@@ -1,13 +1,8 @@
-"use client";
-
-import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import PetCard_1 from "@/components/PetCard_1";
 import Features from "@/components/Features";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import Loggedin_Navbar from "@/components/loggedin_Navbar";
-import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+
+import { AuthNavbar } from "@/components/AuthNavbar";
 
 const pets = [
   {
@@ -45,34 +40,10 @@ const pets = [
 ];
 
 export default function Index() {
-  const supabase = createClientComponentClient();
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    // 1) Get initial user
-    const loadUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data.user);
-    };
-    loadUser();
-
-    // 2) Subscribe to auth changes (login / logout)
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    // 3) Cleanup listener on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [supabase]);
-
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar based on auth */}
-      {user ? <Loggedin_Navbar /> : <Navbar />}
+      <AuthNavbar />
 
       {/* Optional: Hero section if you want to show it */}
       <Hero />
