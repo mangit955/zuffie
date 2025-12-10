@@ -18,6 +18,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
+import FavoritesTab from "@/components/FavouritesTab";
+import Lottie from "lottie-react";
+import loader from "@/public/lottie/loader.json";
 
 type AdoptionApplication = {
   id: string;
@@ -49,13 +52,14 @@ type FavouriteWithPet = {
     image_url: string;
   } | null;
 };
+const supabase = createClientComponentClient();
 
 const Dashboard = () => {
-  const supabase = createClientComponentClient();
   const { toast } = useToast();
   const router = useRouter();
 
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
   const [loadingApplications, setLoadingApplications] = useState(true);
   const [favorite, setFavorite] = useState<FavouriteWithPet[]>([]);
@@ -80,10 +84,11 @@ const Dashboard = () => {
         return;
       }
       setUser(user);
+      setAuthLoading(false);
     };
 
     loadUser();
-  }, [supabase, toast, router]);
+  }, [router, toast]);
 
   // 2) Once we know the user, load their applications
   useEffect(() => {
@@ -111,7 +116,7 @@ const Dashboard = () => {
       setLoadingApplications(false);
     };
     loadApplications();
-  }, [supabase, user, toast]);
+  }, [user, toast]);
 
   //3) load their favourite pets
   useEffect(() => {
@@ -164,7 +169,15 @@ const Dashboard = () => {
     };
 
     loadFavoritePets();
-  }, [supabase, user, toast]);
+  }, [user, toast]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Lottie animationData={loader} loop className="h-64 w-64" />
+      </div>
+    );
+  }
 
   const appointments = [
     { pet: "Max", shelter: "Happy Paws", date: "2025-10-25", time: "2:00 PM" },
@@ -207,61 +220,11 @@ const Dashboard = () => {
             </TabsList>
 
             <TabsContent value="favorites" className="space-y-4">
-              {loadingFavorite ? (
-                <p className="text-muted-foreground">
-                  Loading your favorite Pets
-                </p>
-              ) : favorite.length === 0 ? (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>No favourites yet</CardTitle>
-                    <CardDescription>
-                      you haven&apos;t liked any pets yet.
-                    </CardDescription>
-                    <CardContent>
-                      <Button onClick={() => router.push("/")}>
-                        Find your Pet
-                      </Button>
-                    </CardContent>
-                  </CardHeader>
-                </Card>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {favorite.map((fav) => {
-                    const pet = fav.pets; //joined pet row
-
-                    //In case a pet_id does't exist in our map (defensive check)
-                    if (!pet) return null;
-
-                    return (
-                      <Card key={fav.id}>
-                        <CardHeader>
-                          <div className="text-6xl text-center mb-2">
-                            {/* if you had emojis you could put them here; for now just text */}
-                            {/* Or show image instead in CardContent */}
-                          </div>
-                          <CardTitle>{pet.name}</CardTitle>
-                          <CardDescription>{pet.breed}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                          <p className="text-sm text-muted-foreground">
-                            Age: {pet.age}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            Gender: {pet.gender}
-                          </p>
-                          <Button
-                            className="w-full"
-                            onClick={() => router.push(`/pets/${pet.id}`)}
-                          >
-                            View Details
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              )}
+              <FavoritesTab
+                favorite={favorite}
+                loadingFavorite={loadingFavorite}
+                onViewPet={(id) => router.push(`/pets/${id}`)}
+              />
             </TabsContent>
 
             <TabsContent value="applications" className="space-y-4">
