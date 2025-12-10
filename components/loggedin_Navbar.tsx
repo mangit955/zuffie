@@ -62,7 +62,10 @@ const Loggedin_Navbar = () => {
         </Link>
       </div>
 
-      <Button onClick={Logout} className="bg-accent hover:bg-accent/90">
+      <Button
+        onClick={Logout}
+        className="bg-accent border-2  border-accent hover:bg-accent/90 shadow-md "
+      >
         Log out
       </Button>
     </nav>

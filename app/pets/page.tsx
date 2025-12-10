@@ -13,6 +13,8 @@ import { Search } from "lucide-react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
+import Lottie from "lottie-react";
+import catLoader from "@/public/lottie/catLoader.json"; // adjust path if needed
 
 type DbPet = {
   id: string;
@@ -52,6 +54,10 @@ const Pets = () => {
     const loadPets = async () => {
       setLoadingPets(true);
 
+      //Start timer
+      const minLoadTime = new Promise((resolve) => setTimeout(resolve, 2000));
+
+      //fetch pets
       const { data, error } = await supabase
         .from("pets")
         .select("id, name, breed, age, gender, image_url, type")
@@ -63,6 +69,8 @@ const Pets = () => {
       } else {
         setPets(data || []);
       }
+      // Wait for both: fetch + 3 sec timer
+      await minLoadTime;
       setLoadingPets(false);
     };
     loadPets();
@@ -130,27 +138,39 @@ const Pets = () => {
           </div>
         </div>
 
-        {/* Pet Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredPets.map((pet) => (
-            <PetCard
-              key={pet.id}
-              id={pet.id}
-              name={pet.name}
-              breed={pet.breed}
-              age={pet.age}
-              gender={pet.gender}
-              image={pet.image_url || "/placeholder.jpg"}
+        {/* Pet Grid / Loader */}
+        {loadingPets ? (
+          <div className="flex justify-center py-24">
+            <Lottie
+              animationData={catLoader}
+              loop={true}
+              className="w-64 h-64"
             />
-          ))}
-        </div>
-
-        {filteredPets.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">
-              No pets found matching your criteria
-            </p>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredPets.map((pet) => (
+                <PetCard
+                  key={pet.id}
+                  id={pet.id}
+                  name={pet.name}
+                  breed={pet.breed}
+                  age={pet.age}
+                  gender={pet.gender}
+                  image={pet.image_url || "/placeholder.jpg"}
+                />
+              ))}
+            </div>
+
+            {filteredPets.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground text-lg">
+                  No pets found matching your criteria
+                </p>
+              </div>
+            )}
+          </>
         )}
       </section>
     </div>

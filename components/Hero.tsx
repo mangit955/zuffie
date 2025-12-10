@@ -35,7 +35,11 @@ const Hero = () => {
             <AnimatedAdoptButton />
           </Link>
           <Link href="/admin/pets/new">
-            <Button size="lg" variant="outline" className="border-2 bg-white">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-2 bg-white shadow-md"
+            >
               <MessageCircle className="mr-2 h-5 w-5" />
               Post adoption request
             </Button>

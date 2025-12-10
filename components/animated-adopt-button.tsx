@@ -40,7 +40,7 @@ export function AnimatedAdoptButton() {
 
       <Button
         size="lg"
-        className="shine-button bg-accent hover:bg-accent cursor-pointer transition-transform duration-200 hover:scale-105 "
+        className="shine-button bg-accent shadow-md hover:bg-accent cursor-pointer transition-transform duration-200 hover:scale-105 "
         onMouseEnter={handelMouseEnter}
       >
         Adopt Now
