@@ -8,7 +8,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useToast } from "@/hooks/use-toast";
 import type { User } from "@supabase/supabase-js";
 
 interface PetCardProps {
@@ -32,7 +31,6 @@ const PetCard = ({
 }: PetCardProps) => {
   //console.log("PetCard image src for", name, ":", image);
   const supabase = createClientComponentClient();
-  const { toast } = useToast();
 
   const [user, setUser] = useState<User | null>(null);
   const [liked, setLiked] = useState(false);

@@ -104,7 +104,7 @@ const Resources = () => {
             return (
               <Card
                 key={index}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="hover:shadow-lg cursor-pointer transition-transform hover:scale-[1.02]"
                 onClick={() => {
                   if (article.type === "video") {
                     window.open(article.href, "_blank", "noopener,noreferrer");
