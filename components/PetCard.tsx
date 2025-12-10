@@ -132,7 +132,7 @@ const PetCardComponent = ({
           variant="ghost"
           onClick={handleHeartClick}
           disabled={!user || loading}
-          className="absolute right-3 top-3 bg-card/60 hover:bg-card"
+          className="absolute right-3 top-3 bg-card/40 hover:bg-card/60"
           aria-pressed={liked}
           title={
             !user
@@ -163,7 +163,7 @@ const PetCardComponent = ({
 
       <CardFooter className="flex gap-2 p-4 pt-0">
         <Link href={`/pets/${id}`} className="flex-1">
-          <Button className="w-full bg-primary shadow-sm hover:bg-primary/90">
+          <Button className="w-full bg-primary shadow-sm hover:bg-primary/90 cursor-pointer">
             Adopt Me
           </Button>
         </Link>

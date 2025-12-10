@@ -87,11 +87,11 @@ const PetCard = ({
       </CardContent>
       <CardFooter className="p-4 pt-0 flex gap-2">
         <Link href={`/pets`} className="flex-1">
-          <Button className="w-full bg-primary hover:bg-primary/90">
+          <Button className="w-full bg-primary hover:bg-primary/90 cursor-pointer">
             Adopt Me
           </Button>
         </Link>
-        <Button variant="outline" size="icon" className="border-2">
+        <Button variant="outline" size="icon" className="border-2 ">
           <MessageCircle className="h-4 w-4" />
         </Button>
       </CardFooter>
