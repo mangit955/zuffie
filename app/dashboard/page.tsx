@@ -64,6 +64,8 @@ const Dashboard = () => {
   const [loadingApplications, setLoadingApplications] = useState(true);
   const [favorite, setFavorite] = useState<FavouriteWithPet[]>([]);
   const [loadingFavorite, setLoadingFavorite] = useState(true);
+  const [appPage, setAppPage] = useState(1);
+  const appPageSize = 2; //depending on how many cards you want per page
 
   // 1) Load current user
   useEffect(() => {
@@ -112,6 +114,7 @@ const Dashboard = () => {
         });
       } else {
         setApplications(data || []);
+        setAppPage(1);
       }
       setLoadingApplications(false);
     };
@@ -170,6 +173,17 @@ const Dashboard = () => {
 
     loadFavoritePets();
   }, [user, toast]);
+
+  const totalAppPages = Math.max(
+    1,
+    Math.ceil(applications.length / appPageSize)
+  );
+  const currentAppPage = Math.min(appPage, totalAppPages);
+  const appStartIndex = (currentAppPage - 1) * appPageSize;
+  const paginatedApplications = applications.slice(
+    appStartIndex,
+    appStartIndex + appPageSize
+  );
 
   if (authLoading) {
     return (
@@ -248,7 +262,7 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               ) : (
-                applications.map((app) => (
+                paginatedApplications.map((app) => (
                   <Card key={app.id}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
@@ -311,6 +325,31 @@ const Dashboard = () => {
                     </CardContent>
                   </Card>
                 ))
+              )}
+              {applications.length > 0 && (
+                <div className="mt-4 flex items-center justify-center gap-4">
+                  <button
+                    className="rounded-md border-gray-300 cursor-pointer bg-card shadow-sm border px-3 py-1 text-sm disabled:opacity-50"
+                    onClick={() => setAppPage((p) => Math.max(1, p - 1))}
+                    disabled={currentAppPage === 1}
+                  >
+                    Previous
+                  </button>
+
+                  <span className="text-sm text-muted-foreground">
+                    Page {currentAppPage} of {totalAppPages}
+                  </span>
+
+                  <button
+                    className="rounded-md border border-gray-300 cursor-pointer bg-card shadow-sm px-3 py-1 text-sm disabled:opacity-50"
+                    onClick={() =>
+                      setAppPage((p) => Math.min(totalAppPages, p + 1))
+                    }
+                    disabled={currentAppPage === totalAppPages}
+                  >
+                    Next
+                  </button>
+                </div>
               )}
             </TabsContent>
 

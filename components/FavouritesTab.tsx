@@ -71,7 +71,10 @@ const FavoritesTab = memo(function FavoritesTab({
               <p className="text-sm text-muted-foreground">
                 Gender: {pet.gender}
               </p>
-              <Button className="w-full" onClick={() => onViewPet(pet.id)}>
+              <Button
+                className="w-full cursor-pointer"
+                onClick={() => onViewPet(pet.id)}
+              >
                 View Details
               </Button>
             </CardContent>

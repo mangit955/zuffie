@@ -34,6 +34,8 @@ const Pets = () => {
   const [filterGender, setFilterGender] = useState("all");
   const [pets, setPets] = useState<DbPet[]>([]);
   const [loadingPets, setLoadingPets] = useState(true);
+  const [page, setPage] = useState(1);
+  const pageSize = 8;
 
   // 🔹 new: user + favorite IDs
   const [user, setUser] = useState<User | null>(null);
@@ -123,6 +125,11 @@ const Pets = () => {
     return matchesSearch && matchesType && matchesGender;
   });
 
+  const totalPages = Math.max(1, Math.ceil(filteredPets.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedPets = filteredPets.slice(startIndex, startIndex + pageSize);
+
   return (
     <div className="min-h-screen bg-background">
       <Loggedin_Navbar />
@@ -144,13 +151,22 @@ const Pets = () => {
             <Input
               placeholder="Search by name or breed..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1);
+              }}
               className="pl-10 bg-card shadow-sm"
             />
           </div>
 
           <div className="flex  flex-wrap gap-4">
-            <Select value={filterType} onValueChange={setFilterType}>
+            <Select
+              value={filterType}
+              onValueChange={(value) => {
+                setFilterType(value);
+                setPage(1);
+              }}
+            >
               <SelectTrigger className="w-[180px] bg-card ">
                 <SelectValue placeholder="Pet Type" />
               </SelectTrigger>
@@ -161,7 +177,13 @@ const Pets = () => {
               </SelectContent>
             </Select>
 
-            <Select value={filterGender} onValueChange={setFilterGender}>
+            <Select
+              value={filterGender}
+              onValueChange={(value) => {
+                setFilterGender(value);
+                setPage(1);
+              }}
+            >
               <SelectTrigger className="w-[180px] bg-card  ">
                 <SelectValue placeholder="Gender" />
               </SelectTrigger>
@@ -186,7 +208,7 @@ const Pets = () => {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {filteredPets.map((pet) => (
+              {paginatedPets.map((pet) => (
                 <PetCard
                   key={pet.id}
                   id={pet.id}
@@ -207,6 +229,30 @@ const Pets = () => {
                 <p className="text-lg text-muted-foreground">
                   No pets found matching your criteria
                 </p>
+              </div>
+            )}
+
+            {filteredPets.length > 0 && (
+              <div className="mt-8 flex items-center justify-center gap-4">
+                <button
+                  className="rounded-md border border-gray-300 shadow-sm px-3 py-1 text-sm disabled:opacity-50 bg-card cursor-pointer"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+
+                <span className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <button
+                  className="rounded-md border border-gray-300 shadow-sm px-3 py-1 text-sm disabled:opacity-50 bg-card cursor-pointer"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
               </div>
             )}
           </>
