@@ -1,12 +1,12 @@
 "use client";
 
+import { memo, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Heart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@supabase/supabase-js";
@@ -19,9 +19,14 @@ interface PetCardProps {
   gender: string;
   emoji?: string;
   image?: string;
+  user: User | null; // ✅ new
+  initialLiked: boolean; // ✅ new
 }
 
-const PetCard = ({
+// ✅ Supabase client once per file
+const supabase = createClientComponentClient();
+
+const PetCardComponent = ({
   id,
   name,
   breed,
@@ -29,80 +34,57 @@ const PetCard = ({
   gender,
   image,
   emoji,
+  user,
+  initialLiked,
 }: PetCardProps) => {
-  //console.log("PetCard image src for", name, ":", image);
-  const supabase = createClientComponentClient();
   const { toast } = useToast();
 
-  const [user, setUser] = useState<User | null>(null);
-  const [liked, setLiked] = useState(false);
-  const [loading, setloading] = useState(false);
+  const [liked, setLiked] = useState(initialLiked);
+  const [loading, setLoading] = useState(false);
   const [animating, setAnimating] = useState(false);
 
-  //Load current user + whether this pet is already favorited
+  // ✅ keep in sync if parent favorites change
   useEffect(() => {
-    const load = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+    setLiked(initialLiked);
+  }, [initialLiked]);
 
-      if (!user) return;
+  const handleHeartClick = useCallback(async () => {
+    if (!user) return; // same behavior: disabled if not logged in
+    if (loading) return;
 
-      const { data, error } = await supabase
-        .from("favorites")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("pet_id", id)
-        .maybeSingle();
+    setLoading(true);
 
-      if (!error && data) {
-        setLiked(true);
-      }
-    };
+    const nextLiked = !liked;
 
-    load();
-  }, [supabase, id]);
-
-  const handleHeartClick = async () => {
-    if (!user) {
-      //heart is disabled when not logged on (we'll also disable the button below)
-      return;
-    }
-    setloading(true);
+    // ✅ optimistic UI – feel instant
+    setLiked(nextLiked);
+    setAnimating(true);
+    setTimeout(() => setAnimating(false), 150);
 
     try {
-      if (!liked) {
-        //Add to favorites
+      if (nextLiked) {
+        // Add to favorites
         const { error } = await supabase.from("favorites").insert({
           user_id: user.id,
           pet_id: id,
         });
 
         if (error) {
-          console.error("Error adding favorite:", {
-            message: error?.message,
-            details: error?.details,
-            hint: error?.hint,
-            code: error?.code,
-          });
+          console.error("Error adding favorite:", error);
+          setLiked(!nextLiked); // revert
           toast({
             title: "Could not add to favorites",
             description: error.message,
             variant: "destructive",
           });
         } else {
-          setLiked(true);
-          setAnimating(true);
-          setTimeout(() => setAnimating(false), 150);
-
           toast({
             title: "Added to favourite",
             description: `${name} has been added to your favorites.`,
           });
         }
       } else {
-        //Remove from favorites
+        // Remove from favorites
         const { error } = await supabase
           .from("favorites")
           .delete()
@@ -110,45 +92,47 @@ const PetCard = ({
           .eq("pet_id", id);
 
         if (error) {
-          console.error("Error removing favorite", error);
+          console.error("Error removing favorite:", error);
+          setLiked(!nextLiked); // revert
           toast({
             title: "Could not remove favourite",
             description: error.message,
             variant: "destructive",
           });
         } else {
-          setLiked(false);
           toast({
-            title: "Remove from favorites",
+            title: "Removed from favorites",
             description: `${name} has been removed from your favorites.`,
           });
         }
       }
     } finally {
-      setloading(false);
+      setLoading(false);
     }
-  };
+  }, [user, liked, id, name, toast, loading]);
 
   return (
-    <Card className="overflow-hidden shadow-lg hover:shadow-xl bg-card hover:scale-[1.02] transition-transform">
-      <div className="relative h-48 bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
+    <Card className="overflow-hidden bg-card shadow-lg transition-transform hover:scale-[1.02] hover:shadow-xl">
+      <div className="relative flex h-48 items-center justify-center bg-linear-to-br from-secondary/30 to-primary/20">
         {image ? (
           <Image
             src={image}
             alt={name}
             fill
             className="object-cover"
-            unoptimized
+            loading="lazy"
+            sizes="(min-width: 1024px) 25vw, 50vw"
           />
         ) : (
           <span className="text-8xl">{emoji}</span>
         )}
+
         <Button
           size="icon"
           variant="ghost"
           onClick={handleHeartClick}
           disabled={!user || loading}
-          className="absolute top-3 right-3 bg-card/60 hover:bg-card"
+          className="absolute right-3 top-3 bg-card/60 hover:bg-card"
           aria-pressed={liked}
           title={
             !user
@@ -163,21 +147,23 @@ const PetCard = ({
               animating ? "scale-125" : "scale-100"
             }`}
             color={liked ? "#ef4444" : "currentColor"}
-            fill={liked ? "#ef4444" : "none"} // filled red when liked
+            fill={liked ? "#ef4444" : "none"}
           />
         </Button>
       </div>
+
       <CardContent className="p-4">
-        <h3 className="text-xl font-bold text-foreground mb-2">{name}</h3>
-        <p className="text-muted-foreground text-sm mb-3">{breed}</p>
+        <h3 className="mb-2 text-xl font-bold text-foreground">{name}</h3>
+        <p className="mb-3 text-sm text-muted-foreground">{breed}</p>
         <div className="flex gap-2">
           <Badge variant="secondary">{age}</Badge>
           <Badge variant="secondary">{gender}</Badge>
         </div>
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex gap-2">
+
+      <CardFooter className="flex gap-2 p-4 pt-0">
         <Link href={`/pets/${id}`} className="flex-1">
-          <Button className="w-full bg-primary hover:bg-primary/90">
+          <Button className="w-full bg-primary shadow-sm hover:bg-primary/90">
             Adopt Me
           </Button>
         </Link>
@@ -189,4 +175,5 @@ const PetCard = ({
   );
 };
 
+const PetCard = memo(PetCardComponent);
 export default PetCard;

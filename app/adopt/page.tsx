@@ -272,7 +272,7 @@ const Adopt = () => {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full"
+                  className="w-full cursor-pointer shadow-md"
                   disabled={submitting}
                 >
                   {submitting ? "Submitting..." : "Submit Application"}

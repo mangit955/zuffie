@@ -223,7 +223,11 @@ const PetDetail = () => {
               </Card>
 
               <div className="flex gap-4">
-                <Button size="lg" className="flex-1" onClick={handleAdopt}>
+                <Button
+                  size="lg"
+                  className="flex-1 hover:scale-[1.02] transition-transform cursor-pointer"
+                  onClick={handleAdopt}
+                >
                   Adopt {pet.name}
                 </Button>
                 <Button size="lg" variant="outline">
