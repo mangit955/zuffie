@@ -24,6 +24,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useProtectRoute } from "@/hooks/useProtectRoute";
 import { createSupabaseClient } from "@/lib/supabaseClient";
+import Lottie from "lottie-react";
+import loaderAnimation from "@/public/lottie/loader.json";
 
 const Adopt = () => {
   const { loading } = useProtectRoute();
@@ -114,7 +116,14 @@ const Adopt = () => {
       setSubmitting(false);
     }
   };
-  if (loading) return <p>Loading...</p>;
+  
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Lottie animationData={loaderAnimation} loop className="w-32 h-32" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

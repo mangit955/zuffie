@@ -7,12 +7,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Image from "next/image";
+import Lottie from "lottie-react";
+import loader from "@/public/lottie/loader.json";
+import { useState } from "react";
 
+const supabase = createClientComponentClient();
 const Login = () => {
-  const supabase = createClientComponentClient();
+  const [loading, setLoading] = useState(false);
+
   const handleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -25,9 +29,19 @@ const Login = () => {
       },
     });
 
-    if (error) console.log("Error signing in:", error.message);
-    else console.log("Redirecting to Google...");
+    if (error) {
+      console.log("Error signing in:", error.message);
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Lottie animationData={loader} loop className="w-48 h-48" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -47,6 +61,7 @@ const Login = () => {
             Get started with your Zuffie account
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <Button
             type="submit"

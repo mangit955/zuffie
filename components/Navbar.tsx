@@ -50,7 +50,9 @@ const Navbar = () => {
       </div> */}
 
       <Link href="/login">
-        <Button className="bg-accent hover:bg-accent/90">Get Started</Button>
+        <Button className="bg-accent hover:bg-accent/90 cursor-pointer">
+          Get Started
+        </Button>
       </Link>
     </nav>
   );

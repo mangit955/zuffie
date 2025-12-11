@@ -15,6 +15,7 @@ import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import Lottie from "lottie-react";
+import loader from "@/public/lottie/loader.json";
 import catLoader from "@/public/lottie/catLoader.json";
 import type { User } from "@supabase/supabase-js";
 
@@ -40,6 +41,7 @@ const Pets = () => {
   // 🔹 new: user + favorite IDs
   const [user, setUser] = useState<User | null>(null);
   const [favoritePetIds, setFavoritePetIds] = useState<Set<string>>(new Set());
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   const supabase = createClientComponentClient();
   const router = useRouter();
@@ -53,6 +55,8 @@ const Pets = () => {
 
       if (!session) {
         router.push("/login");
+      } else {
+        setCheckingAuth(false);
       }
     };
     checkSession();
@@ -129,6 +133,15 @@ const Pets = () => {
   const currentPage = Math.min(page, totalPages);
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedPets = filteredPets.slice(startIndex, startIndex + pageSize);
+
+  // Show loader while checking auth
+  if (checkingAuth) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Lottie animationData={loader} loop={true} className="h-64 w-64" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
