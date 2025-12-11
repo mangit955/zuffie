@@ -65,7 +65,7 @@ const Login = () => {
         <CardContent>
           <Button
             type="submit"
-            className="w-full "
+            className="w-full cursor-pointer "
             size="lg"
             onClick={handleLogin}
           >
