@@ -6,14 +6,14 @@ import hoverCat from "../public/lottie/hoverCat.json";
 import loader from "../public/lottie/loader.json";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 export function AnimatedAdoptButton() {
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const lottieRef = useRef<LottieRefCurrentProps | null>(null);
   const router = useRouter();
-  const supabase = createClientComponentClient(); // create inside component
+  const supabase = createSupabaseClient(); // create inside component
 
   const handleMouseEnter = () => {
     if (!playing) {

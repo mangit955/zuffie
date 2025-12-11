@@ -7,8 +7,8 @@ import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 interface PetCardProps {
   id: string;
@@ -30,7 +30,7 @@ const PetCard = ({
   emoji,
 }: PetCardProps) => {
   //console.log("PetCard image src for", name, ":", image);
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
 
   const [user, setUser] = useState<User | null>(null);
   const [liked, setLiked] = useState(false);

@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion, LayoutGroup } from "framer-motion";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 // Create Supabase client once per file, not on every render
-const supabase = createClientComponentClient();
+const supabase = createSupabaseClient();
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard" },

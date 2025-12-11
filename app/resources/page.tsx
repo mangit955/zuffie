@@ -11,13 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Video, FileText } from "lucide-react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect } from "react";
-import { href } from "react-router-dom";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 const Resources = () => {
   const router = useRouter();
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
 
   useEffect(() => {
     const checkSession = async () => {

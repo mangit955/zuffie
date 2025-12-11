@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Heart, FileText, Calendar, MessageCircle } from "lucide-react";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -21,6 +20,7 @@ import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import FavoritesTab from "@/components/FavouritesTab";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 type AdoptionApplication = {
   id: string;
@@ -52,7 +52,7 @@ type FavouriteWithPet = {
     image_url: string;
   } | null;
 };
-const supabase = createClientComponentClient();
+const supabase = createSupabaseClient();
 
 const Dashboard = () => {
   const { toast } = useToast();

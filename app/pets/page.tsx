@@ -12,12 +12,12 @@ import {
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useRouter } from "next/navigation";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
 import catLoader from "@/public/lottie/catLoader.json";
 import type { User } from "@supabase/supabase-js";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 type DbPet = {
   id: string;
@@ -43,7 +43,7 @@ const Pets = () => {
   const [favoritePetIds, setFavoritePetIds] = useState<Set<string>>(new Set());
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
   const router = useRouter();
 
   // 1) Protect route: require session

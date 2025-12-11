@@ -1,14 +1,14 @@
 "use client";
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import type { User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import Loggedin_Navbar from "./loggedin_Navbar";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
-const supabase = createClientComponentClient();
+const supabase = createSupabaseClient();
 export function AuthNavbar() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);

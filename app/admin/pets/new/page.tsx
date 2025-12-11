@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { useProtectRoute } from "@/hooks/useProtectRoute"; // if you have this
@@ -26,9 +24,10 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 const NewPetPage = () => {
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
   const router = useRouter();
   const { toast } = useToast();
   const { loading: authLoading } = useProtectRoute(); // optional, if you use this elsewhere

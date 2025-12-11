@@ -7,13 +7,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import Image from "next/image";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
 import { useState } from "react";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
-const supabase = createClientComponentClient();
+const supabase = createSupabaseClient();
 const Login = () => {
   const [loading, setLoading] = useState(false);
 

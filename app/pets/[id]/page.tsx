@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, MessageCircle, Share2, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 type Pet = {
   id: string;
@@ -32,7 +32,7 @@ const PetDetail = () => {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const petId = params.id; //comes form /pets/[id]
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
   const { toast } = useToast();
 
   const [pet, setPet] = useState<Pet | null>(null);

@@ -1,13 +1,13 @@
 "use client";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { Card, CardContent } from "@/components/ui/card";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 import { Heart, Users, Shield, Home } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const About = () => {
-  const supabase = createClientComponentClient();
+  const supabase = createSupabaseClient();
   const router = useRouter();
 
   useEffect(() => {

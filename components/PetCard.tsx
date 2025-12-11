@@ -7,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Heart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useToast } from "@/hooks/use-toast";
 import type { User } from "@supabase/supabase-js";
+import { createSupabaseClient } from "@/lib/supabaseClient";
 
 interface PetCardProps {
   id: string;
@@ -24,7 +24,7 @@ interface PetCardProps {
 }
 
 // ✅ Supabase client once per file
-const supabase = createClientComponentClient();
+const supabase = createSupabaseClient();
 
 const PetCardComponent = ({
   id,
