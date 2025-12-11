@@ -40,6 +40,7 @@ const NewPetPage = () => {
     breed: "",
     age: "",
     gender: "",
+    type: "",
     weight: "",
     color: "",
     location: "",
@@ -135,6 +136,7 @@ const NewPetPage = () => {
         breed: formData.breed,
         age: formData.age,
         gender: formData.gender,
+        type: formData.type,
         weight: formData.weight || null,
         color: formData.color || null,
         location: formData.location || null,
@@ -290,6 +292,26 @@ const NewPetPage = () => {
                     />
                   </div>
                 </div>
+                {/* Type */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Type *</Label>
+                    <Select
+                      value={formData.type}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, type: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cat">Cat</SelectItem>
+                        <SelectItem value="dog">Dog</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
 
                 {/* Color + Location */}
                 <div className="grid md:grid-cols-2 gap-4">
@@ -412,6 +434,7 @@ const NewPetPage = () => {
                   <Input
                     id="image_url"
                     type="file"
+                    className="cursor-pointer"
                     accept="image/*"
                     onChange={(e) => {
                       const file = e.target.files?.[0] || null;
@@ -426,7 +449,7 @@ const NewPetPage = () => {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full"
+                  className="w-full cursor-pointer"
                   disabled={submitting}
                 >
                   {submitting ? "Saving..." : "Create Pet"}
