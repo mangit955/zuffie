@@ -28,11 +28,12 @@ type Pet = {
   image_url: string | null;
 };
 
+const supabase = createSupabaseClient();
 const PetDetail = () => {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const petId = params.id; //comes form /pets/[id]
-  const supabase = createSupabaseClient();
+
   const { toast } = useToast();
 
   const [pet, setPet] = useState<Pet | null>(null);
@@ -49,7 +50,7 @@ const PetDetail = () => {
       }
     };
     checkSession();
-  }, [supabase, router]);
+  }, [router]);
 
   //2) fetch pet by id from supabase
   useEffect(() => {
@@ -88,7 +89,7 @@ const PetDetail = () => {
       setLoading(false);
     };
     loadPet();
-  }, [supabase, petId, toast, router]);
+  }, [petId, toast, router]);
 
   const handleAdopt = () => {
     router.push("/adopt");
@@ -131,14 +132,7 @@ const PetDetail = () => {
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="rounded-full"
-                >
-                  <Heart className="h-5 w-5" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="rounded-full"
+                  className="rounded-full cursor-pointer"
                 >
                   <Share2 className="h-5 w-5" />
                 </Button>
@@ -222,17 +216,13 @@ const PetDetail = () => {
                 </CardContent>
               </Card>
 
-              <div className="flex gap-4">
+              <div className="w-full flex justify-center">
                 <Button
                   size="lg"
-                  className="flex-1 hover:scale-[1.02] transition-transform cursor-pointer"
+                  className="  hover:scale-[1.02] transition-transform cursor-pointer "
                   onClick={handleAdopt}
                 >
                   Adopt {pet.name}
-                </Button>
-                <Button size="lg" variant="outline">
-                  <MessageCircle className="mr-2 h-5 w-5" />
-                  Contact Shelter
                 </Button>
               </div>
             </div>
