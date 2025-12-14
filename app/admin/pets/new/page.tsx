@@ -35,7 +35,7 @@ const NewPetPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
-    id: "",
+    slug: "",
     name: "",
     breed: "",
     age: "",
@@ -70,7 +70,7 @@ const NewPetPage = () => {
     try {
       // If id is empty, generate a simple slug from the name
       const generatedId =
-        formData.id.trim() ||
+        formData.slug.trim() ||
         formData.name
           .toLowerCase()
           .trim()
@@ -123,6 +123,22 @@ const NewPetPage = () => {
         data: { publicUrl },
       } = supabase.storage.from("pet-images").getPublicUrl(filePath);
 
+      // Get current user to set owner_id
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        toast({
+          title: "Authentication error",
+          description: "Please log in again before creating a pet.",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
       // Convert comma-separated personality string → array
       const personalityArray =
         formData.personality
@@ -131,7 +147,7 @@ const NewPetPage = () => {
           .filter(Boolean) || [];
 
       const { error } = await supabase.from("pets").insert({
-        id: generatedId,
+        slug: generatedId,
         name: formData.name,
         breed: formData.breed,
         age: formData.age,
@@ -146,6 +162,7 @@ const NewPetPage = () => {
         neutered: formData.neutered || null,
         personality: personalityArray,
         image_url: publicUrl,
+        owner_id: user.id,
       });
 
       if (error) {
@@ -201,8 +218,8 @@ const NewPetPage = () => {
                       Pet ID (optional – leave empty to auto-generate from name)
                     </Label>
                     <Input
-                      id="id"
-                      value={formData.id}
+                      id="slug"
+                      value={formData.slug}
                       onChange={(e) =>
                         setFormData((prev) => ({ ...prev, id: e.target.value }))
                       }
