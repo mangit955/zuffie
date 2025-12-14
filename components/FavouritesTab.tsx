@@ -11,7 +11,7 @@ import { Button } from "./ui/button";
 type FavouriteWithPet = {
   id: string;
   user_id: string | null;
-  pet_id: string;
+  pet_uuid: string;
   created_at: string;
   pets: {
     id: string;

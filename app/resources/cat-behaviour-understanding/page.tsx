@@ -40,7 +40,7 @@ const CatBehaviorUnderstandingPage = () => {
 
         {/* Hero */}
         <section className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex text-center items-center gap-3 mb-3">
             <Badge variant="secondary">Guide</Badge>
             <span className="text-xs text-muted-foreground">
               ~8–10 min read

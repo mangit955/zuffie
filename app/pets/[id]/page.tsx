@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MessageCircle, Share2, MapPin } from "lucide-react";
+import { Share2, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { useEffect, useState } from "react";
@@ -92,7 +92,7 @@ const PetDetail = () => {
   }, [petId, toast, router]);
 
   const handleAdopt = () => {
-    router.push("/adopt");
+    router.push(`/adopt?petId=${petId}`);
     toast({
       title: "Adoption Request",
       description: "Please fill out the adoption form to proceed.",

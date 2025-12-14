@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, FileText, Calendar, MessageCircle } from "lucide-react";
+import { Heart, FileText, MessageCircle } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -21,6 +21,7 @@ import FavoritesTab from "@/components/FavouritesTab";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
 import { createSupabaseClient } from "@/lib/supabaseClient";
+import Image from "next/image";
 
 type AdoptionApplication = {
   id: string;
@@ -38,10 +39,35 @@ type AdoptionApplication = {
   created_at: string;
 };
 
+type AdoptionApplicationWithPet = {
+  id: string;
+  user_id: string | null;
+  pet_uuid: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  housing_type: string;
+  has_yard: boolean;
+  has_other_pets: boolean;
+  experience: string | null;
+  why_adopt: string;
+  status: string;
+  created_at: string;
+  pets: {
+    id: string;
+    name: string;
+    breed: string;
+    age: string;
+    gender: string;
+    image_url: string;
+  } | null;
+};
+
 type FavouriteWithPet = {
   id: string;
   user_id: string | null;
-  pet_id: string;
+  pet_uuid: string;
   created_at: string;
   pets: {
     id: string;
@@ -60,7 +86,11 @@ const Dashboard = () => {
 
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [adoptionRequests, setAdoptionRequests] = useState<
+    AdoptionApplicationWithPet[]
+  >([]);
   const [applications, setApplications] = useState<AdoptionApplication[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(true);
   const [loadingApplications, setLoadingApplications] = useState(true);
   const [favorite, setFavorite] = useState<FavouriteWithPet[]>([]);
   const [loadingFavorite, setLoadingFavorite] = useState(true);
@@ -134,7 +164,7 @@ const Dashboard = () => {
           `
           id,
           user_id,
-          pet_id,
+          pet_uuid,
           created_at,
           pets (
             id,
@@ -172,6 +202,91 @@ const Dashboard = () => {
     };
 
     loadFavoritePets();
+  }, [user, toast]);
+
+  //4) to fetch the requests for your pets
+  useEffect(() => {
+    if (!user) return;
+
+    const loadAdoptionRequests = async () => {
+      setLoadingRequests(true);
+
+      //get pets owned by current user
+      const { data: pets, error: petsError } = await supabase
+        .from("pets")
+        .select("id")
+        .eq("owner_id", user.id);
+
+      if (petsError) {
+        console.error(petsError);
+        toast({
+          title: "Error loading pets",
+          description: petsError.message,
+          variant: "destructive",
+        });
+        setLoadingRequests(false);
+        return;
+      }
+
+      if (!pets || pets.length === 0) {
+        setAdoptionRequests([]);
+        setLoadingRequests(false);
+        return;
+      }
+
+      const petIds = pets.map((p) => p.id);
+
+      //get adoptation applications for those pets
+      const { data, error } = await supabase
+        .from("adoption_applications")
+        .select(
+          `
+           id,
+        user_id,
+        pet_uuid,
+        full_name,
+        email,
+        phone,
+        address,
+        housing_type,
+        has_yard,
+        has_other_pets,
+        experience,
+        why_adopt,
+        status,
+        created_at,
+        pets (
+          id,
+          name,
+          breed,
+          age,
+          gender,
+          image_url
+        )
+        `
+        )
+        .in("pet_uuid", petIds)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        toast({
+          title: "Error loading adoption requests",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        const normalized: AdoptionApplicationWithPet[] = (data || []).map(
+          (req: any) => ({
+            ...req,
+            pets: Array.isArray(req.pets) ? req.pets[0] ?? null : req.pets,
+          })
+        );
+        setAdoptionRequests(normalized);
+      }
+      setLoadingRequests(false);
+    };
+    loadAdoptionRequests();
   }, [user, toast]);
 
   const totalAppPages = Math.max(
@@ -214,7 +329,7 @@ const Dashboard = () => {
           </div>
 
           <Tabs defaultValue="favorites" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="favorites">
                 <Heart className="mr-2 h-4 w-4" />
                 Favorites
@@ -223,13 +338,10 @@ const Dashboard = () => {
                 <FileText className="mr-2 h-4 w-4" />
                 Applications
               </TabsTrigger>
-              <TabsTrigger value="appointments">
-                <Calendar className="mr-2 h-4 w-4" />
-                Appointments
-              </TabsTrigger>
-              <TabsTrigger value="messages">
+
+              <TabsTrigger value="My Requests">
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Messages
+                My Requests
               </TabsTrigger>
             </TabsList>
 
@@ -256,7 +368,7 @@ const Dashboard = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <Button onClick={() => router.push("/adopt")}>
+                    <Button onClick={() => router.push("/pets")}>
                       Start an application
                     </Button>
                   </CardContent>
@@ -353,40 +465,89 @@ const Dashboard = () => {
               )}
             </TabsContent>
 
-            <TabsContent value="appointments" className="space-y-4">
-              {appointments.map((apt, index) => (
-                <Card key={index}>
+            <TabsContent value="My Requests" className="space-y-4">
+              {loadingRequests ? (
+                <p className="text-muted-foreground">
+                  Loading adoption requests...
+                </p>
+              ) : adoptionRequests.length === 0 ? (
+                <Card>
                   <CardHeader>
-                    <CardTitle>Meeting with {apt.shelter}</CardTitle>
-                    <CardDescription>To meet {apt.pet}</CardDescription>
+                    <CardTitle>No requests yet</CardTitle>
+                    <CardDescription>
+                      You haven&apost received any adoption requests for your
+                      pets.
+                    </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm">
-                      <span className="font-medium">Date:</span> {apt.date}
-                    </p>
-                    <p className="text-sm">
-                      <span className="font-medium">Time:</span> {apt.time}
-                    </p>
-                    <Button variant="outline" className="w-full">
-                      Reschedule
-                    </Button>
-                  </CardContent>
                 </Card>
-              ))}
-            </TabsContent>
+              ) : (
+                adoptionRequests.map((req) => (
+                  <Card key={req.id}>
+                    <CardHeader className="flex flex-row gap-4">
+                      {req.pets?.image_url && (
+                        <Image
+                          src={req.pets.image_url}
+                          alt={req.pets.name}
+                          width={80}
+                          height={80}
+                          className="h-20 w-20 rounded-md object-cover"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <CardTitle>
+                          Request for {req.pets?.name ?? "Unknown Pet"}
+                        </CardTitle>
+                        <CardDescription>
+                          Submitted on{" "}
+                          {new Date(req.created_at).toLocaleDateString()}
+                        </CardDescription>
+                      </div>
+                      <Badge
+                        variant={
+                          req.status === "approved"
+                            ? "default"
+                            : req.status === "rejected"
+                            ? "destructive"
+                            : "secondary"
+                        }
+                      >
+                        {" "}
+                        {req.status}
+                      </Badge>
+                    </CardHeader>
 
-            <TabsContent value="messages" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Messages</CardTitle>
-                  <CardDescription>Conversations with shelters</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    No messages yet. Start a conversation with a shelter!
-                  </p>
-                </CardContent>
-              </Card>
+                    <CardContent className="space-y-1 text-sm">
+                      <p>
+                        <strong>Name:</strong> {req.full_name}
+                      </p>
+                      <p>
+                        <strong>Email:</strong> {req.email}
+                      </p>
+                      <p>
+                        <strong>Phone:</strong> {req.phone}
+                      </p>
+                      <p>
+                        <strong>Housing:</strong> {req.housing_type}
+                      </p>
+                      <p>
+                        <strong>Has yard:</strong> {req.has_yard ? "Yes" : "No"}
+                      </p>
+                      <p>
+                        <strong>Other pets:</strong>{" "}
+                        {req.has_other_pets ? "Yes" : "No"}
+                      </p>
+                      {req.experience && (
+                        <p>
+                          <strong>Experience:</strong> {req.experience}
+                        </p>
+                      )}
+                      <p>
+                        <strong>Why adopt:</strong> {req.why_adopt}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </TabsContent>
           </Tabs>
         </div>

@@ -66,7 +66,7 @@ const PetCardComponent = ({
         // Add to favorites
         const { error } = await supabase.from("favorites").insert({
           user_id: user.id,
-          pet_id: id,
+          pet_uuid: id,
         });
 
         if (error) {
@@ -89,7 +89,7 @@ const PetCardComponent = ({
           .from("favorites")
           .delete()
           .eq("user_id", user.id)
-          .eq("pet_id", id);
+          .eq("pet_uuid", id);
 
         if (error) {
           console.error("Error removing favorite:", error);

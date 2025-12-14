@@ -49,7 +49,7 @@ const PetCard = ({
         .from("favorites")
         .select("id")
         .eq("user_id", user.id)
-        .eq("pet_id", id)
+        .eq("pet_uuid", id)
         .maybeSingle();
 
       if (!error && data) {

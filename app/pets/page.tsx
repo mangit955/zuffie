@@ -77,14 +77,14 @@ const Pets = () => {
 
       const { data, error } = await supabase
         .from("favorites")
-        .select("pet_id")
+        .select("pet_uuid")
         .eq("user_id", user.id);
 
       if (error) {
         console.error("Error loading favorites:", error);
         setFavoritePetIds(new Set());
       } else {
-        const ids = new Set<string>(data?.map((f) => f.pet_id) ?? []);
+        const ids = new Set<string>(data?.map((f) => f.pet_uuid) ?? []);
         setFavoritePetIds(ids);
       }
     };

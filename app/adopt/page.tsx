@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useProtectRoute } from "@/hooks/useProtectRoute";
 import { createSupabaseClient } from "@/lib/supabaseClient";
 import Lottie from "lottie-react";
@@ -43,6 +43,8 @@ const Adopt = () => {
   });
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const petId = searchParams.get("petId");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +72,7 @@ const Adopt = () => {
 
       const { error } = await supabase.from("adoption_applications").insert({
         user_id: user?.id ?? null,
+        pet_uuid: petId,
         full_name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
@@ -83,16 +86,17 @@ const Adopt = () => {
       });
 
       if (error) {
-        console.error("Supabase insert error:", {
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code,
+        console.error("Supabase insert error:", error);
+        console.error("Error details:", {
+          message: error.message || "No message",
+          details: error.details || "No details",
+          hint: error.hint || "No hint",
+          code: error.code || "No code",
         });
 
         toast({
           title: "Could not submit application",
-          description: "Please try again in a moment.",
+          description: error.message || "Please try again in a moment.",
           variant: "destructive",
         });
         setSubmitting(false);
@@ -116,7 +120,7 @@ const Adopt = () => {
       setSubmitting(false);
     }
   };
-  
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
