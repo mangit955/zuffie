@@ -26,6 +26,7 @@ import Image from "next/image";
 type AdoptionApplication = {
   id: string;
   user_id: string | null;
+  pet_uuid: string;
   full_name: string;
   email: string;
   phone: string;
@@ -237,7 +238,12 @@ const Dashboard = () => {
       const petIds = pets.map((p) => p.id);
 
       //get adoptation applications for those pets
-      const { data, error } = await supabase
+      // Try nested query first, fallback to manual join if foreign key isn't configured
+      let data: AdoptionApplicationWithPet[] | null = null;
+      let error: { message?: string; details?: string } | null = null;
+
+      // First, try with nested query
+      const { data: nestedData, error: nestedError } = await supabase
         .from("adoption_applications")
         .select(
           `
@@ -268,21 +274,117 @@ const Dashboard = () => {
         .in("pet_uuid", petIds)
         .order("created_at", { ascending: false });
 
+      // If nested query fails (likely due to missing foreign key), do manual join
+      if (nestedError) {
+        console.warn("Nested query failed, using manual join:", nestedError);
+
+        // Fetch applications without nested query
+        const { data: appsData, error: appsError } = await supabase
+          .from("adoption_applications")
+          .select("*")
+          .in("pet_uuid", petIds)
+          .order("created_at", { ascending: false });
+
+        if (appsError) {
+          error = appsError;
+        } else if (appsData && appsData.length > 0) {
+          // Get unique pet UUIDs from applications
+          const petUuids = [
+            ...new Set(
+              appsData.map((app: AdoptionApplication) => app.pet_uuid)
+            ),
+          ];
+
+          // Fetch pets separately
+          const { data: petsData, error: petsError } = await supabase
+            .from("pets")
+            .select("id, name, breed, age, gender, image_url")
+            .in("id", petUuids);
+
+          if (petsError) {
+            error = petsError;
+          } else {
+            // Create a map of pet data by id
+            const petsMap = new Map(
+              (petsData || []).map(
+                (pet: {
+                  id: string;
+                  name: string;
+                  breed: string;
+                  age: string;
+                  gender: string;
+                  image_url: string;
+                }) => [pet.id, pet]
+              )
+            );
+
+            // Combine applications with pet data
+            data = appsData.map((app: AdoptionApplication) => ({
+              ...app,
+              pets: petsMap.get(app.pet_uuid) || null,
+            }));
+          }
+        } else {
+          data = [];
+        }
+      } else {
+        // Nested query succeeded - normalize the data
+        if (nestedData) {
+          data = nestedData.map(
+            (
+              req: {
+                pets?:
+                  | {
+                      id: string;
+                      name: string;
+                      breed: string;
+                      age: string;
+                      gender: string;
+                      image_url: string;
+                    }[]
+                  | {
+                      id: string;
+                      name: string;
+                      breed: string;
+                      age: string;
+                      gender: string;
+                      image_url: string;
+                    }
+                  | null;
+              } & AdoptionApplication
+            ): AdoptionApplicationWithPet => {
+              const pets = Array.isArray(req.pets)
+                ? req.pets[0] ?? null
+                : req.pets ?? null;
+              return {
+                ...req,
+                pets: pets as {
+                  id: string;
+                  name: string;
+                  breed: string;
+                  age: string;
+                  gender: string;
+                  image_url: string;
+                } | null,
+              };
+            }
+          );
+        } else {
+          data = [];
+        }
+      }
+
       if (error) {
-        console.error(error);
+        console.error("Error loading adoption requests:", error);
+        const errorMessage =
+          error.message || error.details || JSON.stringify(error);
         toast({
           title: "Error loading adoption requests",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
       } else {
-        const normalized: AdoptionApplicationWithPet[] = (data || []).map(
-          (req: any) => ({
-            ...req,
-            pets: Array.isArray(req.pets) ? req.pets[0] ?? null : req.pets,
-          })
-        );
-        setAdoptionRequests(normalized);
+        setAdoptionRequests(data || []);
       }
       setLoadingRequests(false);
     };
