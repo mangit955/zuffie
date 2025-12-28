@@ -213,7 +213,7 @@ const NewPetPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* ID + Name */}
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <Label htmlFor="id">
                       Pet ID (optional – leave empty to auto-generate from name)
                     </Label>
@@ -225,7 +225,7 @@ const NewPetPage = () => {
                       }
                       placeholder="max, luna, charlie..."
                     />
-                  </div>
+                  </div> */}
                   <div className="space-y-2">
                     <Label htmlFor="name">Name *</Label>
                     <Input
