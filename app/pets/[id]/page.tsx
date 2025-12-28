@@ -10,6 +10,8 @@ import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { createSupabaseClient } from "@/lib/supabaseClient";
+import Lottie from "lottie-react";
+import loader from "@/public/lottie/loader.json";
 
 type Pet = {
   id: string;
@@ -103,8 +105,8 @@ const PetDetail = () => {
     return (
       <div className=" min-h-screen bg-background">
         <Loggedin_Navbar />
-        <section className="py-12 px-8 md:px-16 lg:px-24">
-          <p>Loading pet details...</p>
+        <section className="flex item-center justify-center py-12 px-8 md:px-16 lg:px-24">
+          <Lottie animationData={loader} loop className="h-64 w-64" />
         </section>
       </div>
     );
