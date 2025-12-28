@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { useToast } from "@/hooks/use-toast";
 import { useProtectRoute } from "@/hooks/useProtectRoute"; // if you have this
-
+import { Upload } from "lucide-react";
+import Image from "next/image";
 import {
   Card,
   CardHeader,
@@ -31,9 +32,9 @@ const NewPetPage = () => {
   const router = useRouter();
   const { toast } = useToast();
   const { loading: authLoading } = useProtectRoute(); // optional, if you use this elsewhere
-
   const [submitting, setSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     slug: "",
     name: "",
@@ -51,6 +52,15 @@ const NewPetPage = () => {
     personality: "", // comma-separated string (we'll split this)
     image_url: "",
   });
+
+  // Clean up object URL
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   if (authLoading) {
     return (
@@ -240,6 +250,23 @@ const NewPetPage = () => {
                       }
                     />
                   </div>
+                  <div className="space-y-2">
+                    <Label>Type *</Label>
+                    <Select
+                      value={formData.type}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, type: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cat">Cat</SelectItem>
+                        <SelectItem value="dog">Dog</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {/* Breed + Age */}
@@ -307,26 +334,6 @@ const NewPetPage = () => {
                         }))
                       }
                     />
-                  </div>
-                </div>
-                {/* Type */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Type *</Label>
-                    <Select
-                      value={formData.type}
-                      onValueChange={(value) =>
-                        setFormData((prev) => ({ ...prev, type: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="cat">Cat</SelectItem>
-                        <SelectItem value="dog">Dog</SelectItem>
-                      </SelectContent>
-                    </Select>
                   </div>
                 </div>
 
@@ -447,17 +454,88 @@ const NewPetPage = () => {
 
                 {/* Pet Image */}
                 <div className="space-y-2">
-                  <Label htmlFor="image_url">Image URL</Label>
+                  <Label htmlFor="image_url">Pet Image *</Label>
                   <Input
                     id="image_url"
                     type="file"
-                    className="cursor-pointer"
+                    className="cursor-pointer hidden"
                     accept="image/*"
                     onChange={(e) => {
                       const file = e.target.files?.[0] || null;
                       setImageFile(file);
+
+                      if (file) {
+                        const previewUrl = URL.createObjectURL(file);
+                        setImagePreview(previewUrl);
+                      } else {
+                        setImagePreview(null);
+                      }
                     }}
                   />
+
+                  {/* Upload box */}
+                  <label
+                    htmlFor="image_url"
+                    className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-muted-foreground/40 px-6 py-8 text-center cursor-pointer hover:border-primary hover:bg-muted/30 transition "
+                  >
+                    <Upload className="h-6 w-6 text-muted-foreground" />
+
+                    <div className="text-sm">
+                      <span className="font-medium text-foreground">
+                        Click to upload
+                      </span>{" "}
+                      <span className="text-muted-foreground">
+                        or drag and drop
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-muted-forground">
+                      PNG, JPG, JPEG (max 5MB)
+                    </p>
+                  </label>
+
+                  {imagePreview && (
+                    <div className="relative mt-4 w-20 h-20">
+                      <Image
+                        src={imagePreview}
+                        alt="Selected pet preview"
+                        fill
+                        className="object-cover rounded-md border"
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview(null);
+                        }}
+                        className="absolute -top-2 -right-2 bg-background border rounded-full p-1 shadow hover:bg-muted transition"
+                        aria-label="Remove image"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="h-4 w-4"
+                        >
+                          <line x1="18" y1="6" x2="6" y2="18" />
+                          <line x1="6" y1="6" x2="18" y2="18" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {imageFile && (
+                    <p className="text-sm text-muted-foreground">
+                      Selected:{" "}
+                      <span className="font-medium">{imageFile.name}</span>
+                    </p>
+                  )}
+
                   <p className="text-xs text-muted-foreground">
                     Upload an image for this pet
                   </p>
