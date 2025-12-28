@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
@@ -89,9 +88,6 @@ const PetCard = ({
             Adopt Me
           </Button>
         </Link>
-        <Button variant="outline" size="icon" className="border-2 ">
-          <MessageCircle className="h-4 w-4" />
-        </Button>
       </CardFooter>
     </Card>
   );
