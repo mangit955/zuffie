@@ -15,6 +15,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { z } from "zod";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -26,6 +27,54 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { createSupabaseClient } from "@/lib/supabaseClient";
+
+const petSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  type: z.enum(["cat", "dog"], {
+    message: "Pet type is required",
+  }),
+  breed: z.string().min(1, "Breed is required"),
+  age: z
+    .preprocess(
+      (val) => Number(val),
+      z
+        .number({ error: "Age is required" })
+        .int("Age must be a natural number")
+        .positive("Age must be  greater than 0")
+        .max(50, "Age seems unrealistic")
+    )
+    .transform((age) => `${age} years`),
+  gender: z.enum(["Male", "Female"], {
+    message: "Gender is required",
+  }),
+  weight: z
+    .preprocess(
+      (val) => (val === "" || val === undefined ? undefined : Number(val)),
+      z
+        .number({ error: "Weight must be a number" })
+        .positive("Weight must be greater than 0")
+        .max(150, "Weight seems unrealistic")
+        .optional()
+    )
+    .transform((weight) => (weight !== undefined ? `${weight} kg` : undefined)),
+  color: z.string().optional(),
+  location: z.string().optional(),
+  description: z.string().optional(),
+  health_status: z.string().optional(),
+  vaccinated: z.string().optional(),
+  neutered: z.string().optional(),
+  personality: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val
+        ? val
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean)
+        : []
+    ),
+});
 
 const NewPetPage = () => {
   const supabase = createSupabaseClient();
@@ -97,6 +146,23 @@ const NewPetPage = () => {
         return;
       }
 
+      const parsed = petSchema.safeParse(formData);
+
+      if (!parsed.success) {
+        const firstError = Object.values(
+          parsed.error.flatten().fieldErrors
+        )[0]?.[0];
+
+        toast({
+          title: "Invalid form data",
+          description: firstError || "Please check your inputs.",
+          variant: "destructive",
+        });
+
+        setSubmitting(false);
+        return;
+      }
+
       //1) REQUIRE an image file (you can make this optional if you want)
       if (!imageFile) {
         toast({
@@ -149,28 +215,12 @@ const NewPetPage = () => {
         return;
       }
 
-      // Convert comma-separated personality string → array
-      const personalityArray =
-        formData.personality
-          .split(",")
-          .map((trait) => trait.trim())
-          .filter(Boolean) || [];
+      //using parsed data
+      const validatedData = parsed.data;
 
       const { error } = await supabase.from("pets").insert({
         slug: generatedId,
-        name: formData.name,
-        breed: formData.breed,
-        age: formData.age,
-        gender: formData.gender,
-        type: formData.type,
-        weight: formData.weight || null,
-        color: formData.color || null,
-        location: formData.location || null,
-        description: formData.description || null,
-        health_status: formData.health_status || null,
-        vaccinated: formData.vaccinated || null,
-        neutered: formData.neutered || null,
-        personality: personalityArray,
+        ...validatedData,
         image_url: publicUrl,
         owner_id: user.id,
       });
@@ -289,6 +339,9 @@ const NewPetPage = () => {
                     <Label htmlFor="age">Age *</Label>
                     <Input
                       id="age"
+                      type="number"
+                      min={1}
+                      step={1}
                       required
                       placeholder="e.g. 2 years"
                       value={formData.age}
@@ -325,6 +378,9 @@ const NewPetPage = () => {
                     <Label htmlFor="weight">Weight</Label>
                     <Input
                       id="weight"
+                      type="number"
+                      min={1}
+                      step={1}
                       placeholder="e.g. 30 kg"
                       value={formData.weight}
                       onChange={(e) =>
@@ -489,13 +545,13 @@ const NewPetPage = () => {
                       </span>
                     </div>
 
-                    <p className="text-xs text-muted-forground">
+                    <p className="text-xs text-muted-foreground">
                       PNG, JPG, JPEG (max 5MB)
                     </p>
                   </label>
 
                   {imagePreview && (
-                    <div className="relative mt-4 w-20 h-20">
+                    <div className="relative mt-4 w-32 h-32">
                       <Image
                         src={imagePreview}
                         alt="Selected pet preview"
