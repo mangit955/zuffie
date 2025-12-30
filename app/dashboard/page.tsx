@@ -97,7 +97,9 @@ const Dashboard = () => {
   const [loadingFavorite, setLoadingFavorite] = useState(true);
   const [appPage, setAppPage] = useState(1);
   const appPageSize = 2; //depending on how many cards you want per page
-  const [processingRequest, setProcessingRequest] = useState<string | null>(null);
+  const [processingRequest, setProcessingRequest] = useState<string | null>(
+    null
+  );
 
   // 1) Load current user
   useEffect(() => {
@@ -420,9 +422,7 @@ const Dashboard = () => {
       }
 
       // Remove from the list (or update status in the list)
-      setAdoptionRequests((prev) =>
-        prev.filter((req) => req.id !== requestId)
-      );
+      setAdoptionRequests((prev) => prev.filter((req) => req.id !== requestId));
 
       toast({
         title: "Request rejected",
@@ -461,9 +461,9 @@ const Dashboard = () => {
       // Note: You'll need to add 'is_adopted' (boolean) and 'adopted_by' (uuid) columns to your pets table in Supabase
       const { error: petUpdateError } = await supabase
         .from("pets")
-        .update({ 
-          is_adopted: true, 
-          adopted_by: request.user_id 
+        .update({
+          is_adopted: true,
+          adopted_by: request.user_id,
         })
         .eq("id", request.pet_uuid);
 
@@ -476,7 +476,8 @@ const Dashboard = () => {
         );
         toast({
           title: "Warning",
-          description: "Pet adoption status updated, but you may need to add 'is_adopted' column to pets table to filter adopted pets.",
+          description:
+            "Pet adoption status updated, but you may need to add 'is_adopted' column to pets table to filter adopted pets.",
           variant: "default",
         });
       }
@@ -522,10 +523,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const appointments = [
-    { pet: "Max", shelter: "Happy Paws", date: "2025-10-25", time: "2:00 PM" },
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -718,6 +715,7 @@ const Dashboard = () => {
                         </CardDescription>
                       </div>
                       <Badge
+                        className="h-7 px-3 py-1"
                         variant={
                           req.status === "approved"
                             ? "default"
@@ -746,7 +744,8 @@ const Dashboard = () => {
                           <strong>Housing:</strong> {req.housing_type}
                         </p>
                         <p>
-                          <strong>Has yard:</strong> {req.has_yard ? "Yes" : "No"}
+                          <strong>Has yard:</strong>{" "}
+                          {req.has_yard ? "Yes" : "No"}
                         </p>
                         <p>
                           <strong>Other pets:</strong>{" "}
