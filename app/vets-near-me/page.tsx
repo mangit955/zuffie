@@ -10,29 +10,36 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Star, RefreshCcw } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Phone, Star, AlertTriangle } from "lucide-react";
 import { createSupabaseClient } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import Lottie from "lottie-react";
+import loader from "@/public/lottie/loader.json";
 
 type Vet = {
   id: string;
   name: string;
-  address: string;
-  lat: number;
-  lng: number;
-  rating?: number;
-  userRatingsTotal?: number;
-  openNow: boolean | null;
+  city: string;
+  area: string | null;
+  address: string | null;
+  phone: string | null;
+  services: string[];
+  emergency_available: boolean;
+  rating: number | null;
+  total_reviews: number | null;
 };
 
-const VetsNearMePage = () => {
-  const [vets, setVets] = useState<Vet[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [locationError, setLocationError] = useState<string | null>(null);
+const VetsPage = () => {
   const supabase = createSupabaseClient();
   const router = useRouter();
 
-  // 1) Protect route: require session
+  const [city, setCity] = useState("");
+  const [vets, setVets] = useState<Vet[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+
+  // 🔒 Protect route
   useEffect(() => {
     const checkSession = async () => {
       const {
@@ -46,133 +53,123 @@ const VetsNearMePage = () => {
     checkSession();
   }, [supabase, router]);
 
-  const fetchVets = () => {
-    setLocationError(null);
-    setLoading(true);
+  const fetchVetsByCity = async () => {
+    if (!city.trim()) return;
 
-    if (!navigator.geolocation) {
-      setLocationError("Geolocation is not supported by your browser.");
-      setLoading(false);
-      return;
+    setLoading(true);
+    setSearched(true);
+
+    const { data, error } = await supabase
+      .from("vets")
+      .select("*")
+      .eq("city", city.trim())
+      .eq("is_active", true)
+      .order("rating", { ascending: false })
+      .limit(5);
+
+    if (error) {
+      console.error(error);
+      setVets([]);
+    } else {
+      setVets(data || []);
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-
-        try {
-          const res = await fetch(`/api/nearby-vets?lat=${lat}&lng=${lng}`);
-          const data = await res.json();
-
-          if (!res.ok) {
-            setLocationError(data.error || "Failed to load nearby vets.");
-            setVets([]);
-          } else {
-            setVets(data.vets || []);
-          }
-        } catch (err) {
-          console.error("Error fetching vets:", err);
-          setLocationError("Something went wrong while fetching vets.");
-          setVets([]);
-        } finally {
-          setLoading(false);
-        }
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-        if (error.code === error.PERMISSION_DENIED) {
-          setLocationError(
-            "Location permission denied. Please enable it in your browser and try again."
-          );
-        } else {
-          setLocationError("Could not get your location.");
-        }
-        setLoading(false);
-      }
-    );
+    setLoading(false);
   };
-
-  // Auto-load on first visit
-  useEffect(() => {
-    fetchVets();
-  }, []);
 
   return (
     <div className="min-h-screen bg-background">
       <Loggedin_Navbar />
 
-      <section className="py-12 px-8 md:px-16 lg:px-24">
-        <div className="max-w-4xl mx-auto mb-8 text-center">
-          <h1 className="text-4xl font-bold mb-2">Vets Near You</h1>
+      <section className="py-12 px-6 md:px-12 lg:px-24">
+        {/* Header */}
+        <div className="max-w-3xl mx-auto text-center mb-10">
+          <h1 className="text-4xl font-bold mb-3">Trusted Vets & Clinics</h1>
           <p className="text-muted-foreground">
-            Find veterinary clinics close to your current location.
+            Curated veterinary clinics in your city — no location access
+            required.
           </p>
-
-          <div className="mt-4 flex justify-center gap-3">
-            <Button onClick={fetchVets} disabled={loading}>
-              <RefreshCcw className="mr-2 h-4 w-4" />
-              {loading ? "Finding vets..." : "Refresh near me"}
-            </Button>
-          </div>
-
-          {locationError && (
-            <p className="mt-3 text-sm text-red-500">{locationError}</p>
-          )}
         </div>
 
-        {/* Results */}
+        {/* City Search */}
+        <div className="flex gap-3 justify-center mb-10">
+          <Input
+            placeholder="Enter city (e.g. Amravati)"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            className="max-w-xs bg-card shadow-sm text-muted-foreground"
+          />
+          <Button
+            onClick={fetchVetsByCity}
+            disabled={loading}
+            className="cursor-pointer shadow-md"
+          >
+            {loading ? "Searching..." : "Find vets"}
+          </Button>
+        </div>
+
+        {/* States */}
         {loading && (
+          <div className="text-center text-muted-foreground flex items-center justify-center">
+            <Lottie animationData={loader} loop className="h-64 w-64" />
+          </div>
+        )}
+
+        {!loading && searched && vets.length === 0 && (
           <p className="text-center text-muted-foreground">
-            Searching for nearby vets...
+            No vetted clinics found for this city yet.
           </p>
         )}
 
-        {!loading && vets.length === 0 && !locationError && (
-          <p className="text-center text-muted-foreground">
-            No vets found nearby. Try again in a different area.
-          </p>
-        )}
-
+        {/* Vet Cards */}
         <div className="grid gap-4 md:grid-cols-2 max-w-5xl mx-auto">
           {vets.map((vet) => (
             <Card key={vet.id}>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between gap-2">
+                <CardTitle className="flex items-center justify-between">
                   <span>{vet.name}</span>
+
                   {typeof vet.rating === "number" && (
                     <span className="flex items-center gap-1 text-sm text-yellow-500">
                       <Star className="h-4 w-4" />
                       {vet.rating.toFixed(1)}
-                      {vet.userRatingsTotal ? ` (${vet.userRatingsTotal})` : ""}
+                      {vet.total_reviews ? ` (${vet.total_reviews})` : ""}
                     </span>
                   )}
                 </CardTitle>
-                <CardDescription className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  <span>{vet.address}</span>
+
+                <CardDescription>
+                  {vet.area ? `${vet.area}, ` : ""}
+                  {vet.city}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">
-                  {vet.openNow === true && (
-                    <span className="text-green-600 font-medium">Open now</span>
-                  )}
-                  {vet.openNow === false && (
-                    <span className="text-red-500 font-medium">Closed now</span>
+
+              <CardContent className="space-y-3">
+                {vet.address && (
+                  <p className="text-sm text-muted-foreground">{vet.address}</p>
+                )}
+
+                {vet.emergency_available && (
+                  <div className="flex items-center gap-2 text-sm text-red-600 font-medium">
+                    <AlertTriangle className="h-4 w-4" />
+                    Emergency services available
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center pt-2">
+                  {vet.phone ? (
+                    <a href={`tel:${vet.phone}`}>
+                      <Button variant="outline" size="sm">
+                        <Phone className="h-4 w-4 mr-2" />
+                        Call clinic
+                      </Button>
+                    </a>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      Phone not available
+                    </span>
                   )}
                 </div>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                    vet.name + " " + vet.address
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button variant="outline" size="sm">
-                    Open in Maps
-                  </Button>
-                </a>
               </CardContent>
             </Card>
           ))}
@@ -182,4 +179,4 @@ const VetsNearMePage = () => {
   );
 };
 
-export default VetsNearMePage;
+export default VetsPage;
