@@ -92,21 +92,35 @@ const Pets = () => {
     loadUserAndFavorites();
   }, [supabase]);
 
-  // 3) Load pets from Supabase
+  // 3) Load pets from Supabase (excluding adopted pets)
   useEffect(() => {
     const loadPets = async () => {
       setLoadingPets(true);
 
       const minLoadTime = new Promise((resolve) => setTimeout(resolve, 2000));
 
+      // Query pets that are not adopted
+      // Filter out pets where is_adopted is true
       const { data, error } = await supabase
         .from("pets")
         .select("id, name, breed, age, gender, image_url, type")
+        .or("is_adopted.is.null,is_adopted.eq.false")
         .order("created_at", { ascending: false });
 
       if (error) {
         console.error("Error loading pets:", error);
-        setPets([]);
+        // If the column doesn't exist, fallback to loading all pets
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("pets")
+          .select("id, name, breed, age, gender, image_url, type")
+          .order("created_at", { ascending: false });
+
+        if (fallbackError) {
+          console.error("Fallback query error:", fallbackError);
+          setPets([]);
+        } else {
+          setPets(fallbackData || []);
+        }
       } else {
         setPets(data || []);
       }

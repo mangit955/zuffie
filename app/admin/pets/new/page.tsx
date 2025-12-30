@@ -84,6 +84,7 @@ const NewPetPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     slug: "",
     name: "",
@@ -165,8 +166,9 @@ const NewPetPage = () => {
 
       //1) REQUIRE an image file (you can make this optional if you want)
       if (!imageFile) {
+        setImageError("Pet image is required");
         toast({
-          title: "No image selected",
+          title: "Missing pet image",
           description: "Please upload an image for this pet.",
           variant: "destructive",
         });
@@ -287,7 +289,9 @@ const NewPetPage = () => {
                     />
                   </div> */}
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
+                    <Label htmlFor="name">
+                      Name <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="name"
                       required
@@ -301,7 +305,9 @@ const NewPetPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Type *</Label>
+                    <Label>
+                      Type <span className="text-red-500">*</span>
+                    </Label>
                     <Select
                       value={formData.type}
                       onValueChange={(value) =>
@@ -322,7 +328,9 @@ const NewPetPage = () => {
                 {/* Breed + Age */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="breed">Breed *</Label>
+                    <Label htmlFor="breed">
+                      Breed <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="breed"
                       required
@@ -336,7 +344,9 @@ const NewPetPage = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="age">Age *</Label>
+                    <Label htmlFor="age">
+                      Age <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="age"
                       type="number"
@@ -358,7 +368,9 @@ const NewPetPage = () => {
                 {/* Gender + Weight */}
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Gender *</Label>
+                    <Label>
+                      Gender <span className="text-red-500">*</span>
+                    </Label>
                     <Select
                       value={formData.gender}
                       onValueChange={(value) =>
@@ -510,7 +522,9 @@ const NewPetPage = () => {
 
                 {/* Pet Image */}
                 <div className="space-y-2">
-                  <Label htmlFor="image_url">Pet Image *</Label>
+                  <Label htmlFor="image_url">
+                    Pet Image <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="image_url"
                     type="file"
@@ -519,6 +533,7 @@ const NewPetPage = () => {
                     onChange={(e) => {
                       const file = e.target.files?.[0] || null;
                       setImageFile(file);
+                      setImageError(null);
 
                       if (file) {
                         const previewUrl = URL.createObjectURL(file);
@@ -549,6 +564,9 @@ const NewPetPage = () => {
                       PNG, JPG, JPEG (max 5MB)
                     </p>
                   </label>
+                  {imageError && (
+                    <p className="text-sm text-red-500 mt-2"> {imageError}</p>
+                  )}
 
                   {imagePreview && (
                     <div className="relative mt-4 w-32 h-32">
@@ -564,6 +582,7 @@ const NewPetPage = () => {
                         onClick={() => {
                           setImageFile(null);
                           setImagePreview(null);
+                          setImageError("Pet image is required");
                         }}
                         className="absolute -top-2 -right-2 bg-background border rounded-full p-1 shadow hover:bg-muted transition"
                         aria-label="Remove image"

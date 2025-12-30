@@ -97,6 +97,7 @@ const Dashboard = () => {
   const [loadingFavorite, setLoadingFavorite] = useState(true);
   const [appPage, setAppPage] = useState(1);
   const appPageSize = 2; //depending on how many cards you want per page
+  const [processingRequest, setProcessingRequest] = useState<string | null>(null);
 
   // 1) Load current user
   useEffect(() => {
@@ -402,6 +403,118 @@ const Dashboard = () => {
     appStartIndex + appPageSize
   );
 
+  // Handle reject request
+  const handleRejectRequest = async (requestId: string) => {
+    if (!user) return;
+
+    setProcessingRequest(requestId);
+    try {
+      // Update status to rejected
+      const { error } = await supabase
+        .from("adoption_applications")
+        .update({ status: "rejected" })
+        .eq("id", requestId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Remove from the list (or update status in the list)
+      setAdoptionRequests((prev) =>
+        prev.filter((req) => req.id !== requestId)
+      );
+
+      toast({
+        title: "Request rejected",
+        description: "The adoption request has been rejected and removed.",
+      });
+    } catch (error: any) {
+      console.error("Error rejecting request:", error);
+      toast({
+        title: "Error rejecting request",
+        description: error.message || "Failed to reject the request.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingRequest(null);
+    }
+  };
+
+  // Handle accept request
+  const handleAcceptRequest = async (request: AdoptionApplicationWithPet) => {
+    if (!user || !request.pets) return;
+
+    setProcessingRequest(request.id);
+    try {
+      // Start a transaction-like operation
+      // 1. Update adoption application status to approved
+      const { error: updateError } = await supabase
+        .from("adoption_applications")
+        .update({ status: "approved" })
+        .eq("id", request.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // 2. Mark the pet as adopted by updating is_adopted field
+      // Note: You'll need to add 'is_adopted' (boolean) and 'adopted_by' (uuid) columns to your pets table in Supabase
+      const { error: petUpdateError } = await supabase
+        .from("pets")
+        .update({ 
+          is_adopted: true, 
+          adopted_by: request.user_id 
+        })
+        .eq("id", request.pet_uuid);
+
+      if (petUpdateError) {
+        // If is_adopted column doesn't exist yet, log a warning
+        // The adoption application status is still updated, but the pet won't be filtered
+        console.warn(
+          "Could not update pet adoption status. Please add 'is_adopted' (boolean) and 'adopted_by' (uuid) columns to your pets table:",
+          petUpdateError
+        );
+        toast({
+          title: "Warning",
+          description: "Pet adoption status updated, but you may need to add 'is_adopted' column to pets table to filter adopted pets.",
+          variant: "default",
+        });
+      }
+
+      // 3. Reject all other pending requests for this pet
+      const { error: rejectOthersError } = await supabase
+        .from("adoption_applications")
+        .update({ status: "rejected" })
+        .eq("pet_uuid", request.pet_uuid)
+        .neq("id", request.id)
+        .eq("status", "pending");
+
+      if (rejectOthersError) {
+        console.warn("Could not reject other requests:", rejectOthersError);
+        // Non-critical error, continue
+      }
+
+      // Remove the accepted request from the list
+      setAdoptionRequests((prev) =>
+        prev.filter((req) => req.id !== request.id)
+      );
+
+      toast({
+        title: "Request accepted!",
+        description: `The adoption request for ${request.pets.name} has been accepted. The pet will be removed from listings.`,
+      });
+    } catch (error: any) {
+      console.error("Error accepting request:", error);
+      toast({
+        title: "Error accepting request",
+        description: error.message || "Failed to accept the request.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingRequest(null);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -618,34 +731,61 @@ const Dashboard = () => {
                       </Badge>
                     </CardHeader>
 
-                    <CardContent className="space-y-1 text-sm">
-                      <p>
-                        <strong>Name:</strong> {req.full_name}
-                      </p>
-                      <p>
-                        <strong>Email:</strong> {req.email}
-                      </p>
-                      <p>
-                        <strong>Phone:</strong> {req.phone}
-                      </p>
-                      <p>
-                        <strong>Housing:</strong> {req.housing_type}
-                      </p>
-                      <p>
-                        <strong>Has yard:</strong> {req.has_yard ? "Yes" : "No"}
-                      </p>
-                      <p>
-                        <strong>Other pets:</strong>{" "}
-                        {req.has_other_pets ? "Yes" : "No"}
-                      </p>
-                      {req.experience && (
+                    <CardContent className="space-y-4">
+                      <div className="space-y-1 text-sm">
                         <p>
-                          <strong>Experience:</strong> {req.experience}
+                          <strong>Name:</strong> {req.full_name}
                         </p>
+                        <p>
+                          <strong>Email:</strong> {req.email}
+                        </p>
+                        <p>
+                          <strong>Phone:</strong> {req.phone}
+                        </p>
+                        <p>
+                          <strong>Housing:</strong> {req.housing_type}
+                        </p>
+                        <p>
+                          <strong>Has yard:</strong> {req.has_yard ? "Yes" : "No"}
+                        </p>
+                        <p>
+                          <strong>Other pets:</strong>{" "}
+                          {req.has_other_pets ? "Yes" : "No"}
+                        </p>
+                        {req.experience && (
+                          <p>
+                            <strong>Experience:</strong> {req.experience}
+                          </p>
+                        )}
+                        <p>
+                          <strong>Why adopt:</strong> {req.why_adopt}
+                        </p>
+                      </div>
+
+                      {/* Action buttons - only show for pending requests */}
+                      {req.status === "pending" && (
+                        <div className="flex gap-3 pt-4 border-t">
+                          <Button
+                            onClick={() => handleAcceptRequest(req)}
+                            disabled={processingRequest === req.id}
+                            className="flex-1 bg-green-600 hover:bg-green-700"
+                          >
+                            {processingRequest === req.id
+                              ? "Processing..."
+                              : "Accept"}
+                          </Button>
+                          <Button
+                            onClick={() => handleRejectRequest(req.id)}
+                            disabled={processingRequest === req.id}
+                            variant="destructive"
+                            className="flex-1"
+                          >
+                            {processingRequest === req.id
+                              ? "Processing..."
+                              : "Reject"}
+                          </Button>
+                        </div>
                       )}
-                      <p>
-                        <strong>Why adopt:</strong> {req.why_adopt}
-                      </p>
                     </CardContent>
                   </Card>
                 ))
