@@ -13,6 +13,7 @@ import { createSupabaseClient } from "@/lib/supabaseClient";
 
 interface PetCardProps {
   id: string;
+  slug: string;
   name: string;
   breed: string;
   age: string;
@@ -28,6 +29,7 @@ const supabase = createSupabaseClient();
 
 const PetCardComponent = ({
   id,
+  slug,
   name,
   breed,
   age,
@@ -162,7 +164,7 @@ const PetCardComponent = ({
       </CardContent>
 
       <CardFooter className="flex gap-2 p-4 pt-0">
-        <Link href={`/pets/${id}`} className="flex-1">
+        <Link href={`/pets/${slug}`} className="flex-1">
           <Button className="w-full bg-primary shadow-sm hover:bg-primary/90 cursor-pointer">
             Adopt Me
           </Button>

@@ -17,7 +17,7 @@ type Pet = {
   id: string;
   name: string;
   breed: string;
-  age: number;
+  age: string;
   gender: string;
   weight: string | null;
   color: string | null;
@@ -35,9 +35,8 @@ const PetDetail = () => {
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const petId = params.id; //comes form /pets/[id]
-
   const { toast } = useToast();
-
+  const [authChecked, setAuthChecked] = useState(false);
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
   //check session
@@ -49,49 +48,54 @@ const PetDetail = () => {
 
       if (!session) {
         router.push("/login");
+        return;
       }
+      setAuthChecked(true);
     };
     checkSession();
   }, [router]);
 
   //2) fetch pet by id from supabase
   useEffect(() => {
+    if (!authChecked || !petId) return;
+
     const loadPet = async () => {
-      if (!petId) return;
       setLoading(true);
 
       const { data, error } = await supabase
         .from("pets")
         .select("*")
-        .eq("id", petId)
+        .eq("slug", petId.toLowerCase())
         .maybeSingle();
 
-      if (!data) {
-        toast({
-          title: "Pet not Found",
-          description: "The Pet you have been looking for does not exist.",
-          variant: "destructive",
-        });
-        router.push("/");
-        return;
-      }
-
+      // 1 Handle real errors first
       if (error) {
         console.error("Error fetching the pet", error);
         toast({
           title: "Error fetching pet:",
-          description: error.message,
+          description: "Something went wrong while loading this pet.",
           variant: "destructive",
         });
-        router.push("/");
+        router.push("/pets");
+        return;
+      }
+      // 2️ Now safely handle "not found"
+      if (!data) {
+        toast({
+          title: "Pet not Found",
+          description: "Detail page could not load the pet.",
+          variant: "destructive",
+        });
+        router.push("/pets");
         return;
       }
 
+      // 3️ Valid data
       setPet(data as Pet);
       setLoading(false);
     };
     loadPet();
-  }, [petId, toast, router]);
+  }, [petId, toast, router, authChecked]);
 
   const handleAdopt = () => {
     router.push(`/adopt?petId=${petId}`);

@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useProtectRoute } from "@/hooks/useProtectRoute"; // if you have this
 import { Upload } from "lucide-react";
 import Image from "next/image";
+import Lottie from "lottie-react";
+import loader from "@/public/lottie/loader.json";
 import {
   Card,
   CardHeader,
@@ -117,7 +119,9 @@ const NewPetPage = () => {
       <div className="min-h-screen bg-background">
         <Loggedin_Navbar />
         <section className="py-12 px-8 md:px-16 lg:px-24">
-          <p>Checking authentication...</p>
+          <div className=" flex items-center justify-center">
+            <Lottie animationData={loader} loop className="h-64 w-64" />
+          </div>
         </section>
       </div>
     );
