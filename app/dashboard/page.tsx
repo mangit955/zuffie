@@ -77,6 +77,7 @@ type FavouriteWithPet = {
     age: string;
     gender: string;
     image_url: string;
+    slug: string;
   } | null;
 };
 const supabase = createSupabaseClient();
@@ -176,7 +177,8 @@ const Dashboard = () => {
             breed,
             age,
             gender,
-            image_url
+            image_url,
+            slug
           )
         `
         )

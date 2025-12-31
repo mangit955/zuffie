@@ -23,6 +23,7 @@ type FavouriteWithPet = {
     age: string;
     gender: string;
     image_url: string;
+    slug: string;
   } | null;
 };
 
@@ -92,7 +93,7 @@ const FavoritesTab = memo(function FavoritesTab({
                 <Button
                   size="sm"
                   className="mt-3 w-fit cursor-pointer"
-                  onClick={() => onViewPet(pet.id)}
+                  onClick={() => onViewPet(pet.slug)}
                 >
                   View Details
                 </Button>
