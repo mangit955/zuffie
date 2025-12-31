@@ -129,7 +129,7 @@ const Resources = () => {
               >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
-                    <div className="w-12 h-12 rounded-lg bg-primary/10 fiex items-center justify-center">
+                    <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
                       <Icon className="h-6 w-6 text-primary" />
                     </div>
                     <Badge variant="secondary">
