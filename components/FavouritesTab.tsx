@@ -7,6 +7,7 @@ import {
   CardTitle,
 } from "./ui/card";
 import { Button } from "./ui/button";
+import Image from "next/image";
 
 type FavouriteWithPet = {
   id: string;
@@ -61,23 +62,36 @@ const FavoritesTab = memo(function FavoritesTab({
         if (!pet) return null;
 
         return (
-          <Card key={fav.id}>
-            <CardHeader>
-              <CardTitle>{pet.name}</CardTitle>
-              <CardDescription>{pet.breed}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <p className="text-sm text-muted-foreground">Age: {pet.age}</p>
-              <p className="text-sm text-muted-foreground">
-                Gender: {pet.gender}
-              </p>
-              <Button
-                className="w-full cursor-pointer"
-                onClick={() => onViewPet(pet.id)}
-              >
-                View Details
-              </Button>
-            </CardContent>
+          <Card key={fav.id} className="overflow-hidden">
+            <div className="flex gap-4 p-4">
+              {/* Pet Image */}
+              <div className="relative h-24 w-24 shrink-0">
+                <Image
+                  src={pet.image_url || "/placeholder-pet.png"}
+                  alt={pet.name}
+                  fill
+                  className="object-cover rounded-md"
+                />
+              </div>
+
+              {/* Pet Info */}
+              <div className="flex flex-col justify-between flex-1">
+                <div>
+                  <h3 className="text-lg font-semibold">{pet.name}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {pet.breed} • {pet.age} • {pet.gender}
+                  </p>
+                </div>
+
+                <Button
+                  size="sm"
+                  className="mt-3 w-fit cursor-pointer"
+                  onClick={() => onViewPet(pet.id)}
+                >
+                  View Details
+                </Button>
+              </div>
+            </div>
           </Card>
         );
       })}

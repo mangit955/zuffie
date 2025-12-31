@@ -706,7 +706,7 @@ const Dashboard = () => {
                         />
                       )}
                       <div className="flex-1">
-                        <CardTitle>
+                        <CardTitle className="mb-2">
                           Request for {req.pets?.name ?? "Unknown Pet"}
                         </CardTitle>
                         <CardDescription>
