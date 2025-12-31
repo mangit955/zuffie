@@ -243,8 +243,8 @@ const NewPetPage = () => {
       }
 
       toast({
-        title: "Pet created",
-        description: `${formData.name} has been added to the database.`,
+        title: "Pet Added",
+        description: "View your pet in the adopt section. ",
       });
 
       // Optional: go to pet detail page or dashboard

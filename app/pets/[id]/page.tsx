@@ -28,6 +28,7 @@ type Pet = {
   neutered: string | null;
   personality: string[] | null;
   image_url: string | null;
+  owner_id: string | null;
 };
 
 const supabase = createSupabaseClient();
@@ -39,6 +40,8 @@ const PetDetail = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   //check session
   useEffect(() => {
     const checkSession = async () => {
@@ -50,6 +53,7 @@ const PetDetail = () => {
         router.push("/login");
         return;
       }
+      setCurrentUserId(session.user.id); //store the current user Id
       setAuthChecked(true);
     };
     checkSession();
@@ -96,6 +100,8 @@ const PetDetail = () => {
     };
     loadPet();
   }, [petId, toast, router, authChecked]);
+
+  const isOwner = currentUserId && pet && pet.owner_id === currentUserId;
 
   const handleAdopt = () => {
     router.push(`/adopt?petId=${petId}`);
@@ -223,13 +229,20 @@ const PetDetail = () => {
               </Card>
 
               <div className="w-full flex justify-center">
-                <Button
-                  size="lg"
-                  className="  hover:scale-[1.02] transition-transform cursor-pointer "
-                  onClick={handleAdopt}
-                >
-                  Adopt {pet.name}
-                </Button>
+                {!isOwner && (
+                  <Button
+                    size="lg"
+                    className="hover:scale-[1.02] transition-transform cursor-pointer "
+                    onClick={handleAdopt}
+                  >
+                    Adopt {pet.name}
+                  </Button>
+                )}
+                {isOwner && (
+                  <p className="text-muted-foreground text-center">
+                    This is your pet listing. You cannot adopt your own pet.
+                  </p>
+                )}
               </div>
             </div>
           </div>
