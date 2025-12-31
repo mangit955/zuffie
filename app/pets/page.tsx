@@ -27,6 +27,7 @@ type DbPet = {
   gender: string;
   image_url: string;
   type: string; //"dog" | "cat"
+  slug: string;
 };
 
 const Pets = () => {
@@ -103,7 +104,7 @@ const Pets = () => {
       // Filter out pets where is_adopted is true
       const { data, error } = await supabase
         .from("pets")
-        .select("id, name, breed, age, gender, image_url, type")
+        .select("id, name, breed, age, gender, image_url, type, slug")
         .or("is_adopted.is.null,is_adopted.eq.false")
         .order("created_at", { ascending: false });
 
@@ -112,7 +113,7 @@ const Pets = () => {
         // If the column doesn't exist, fallback to loading all pets
         const { data: fallbackData, error: fallbackError } = await supabase
           .from("pets")
-          .select("id, name, breed, age, gender, image_url, type")
+          .select("id, name, breed, age, gender, image_url, type, slug")
           .order("created_at", { ascending: false });
 
         if (fallbackError) {
@@ -239,6 +240,7 @@ const Pets = () => {
                 <PetCard
                   key={pet.id}
                   id={pet.id}
+                  slug={pet.slug}
                   name={pet.name}
                   breed={pet.breed}
                   age={pet.age}
