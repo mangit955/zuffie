@@ -110,7 +110,7 @@ const VetsPage = () => {
 
         {/* States */}
         {loading && (
-          <div className="text-center text-muted-foreground flex items-center justify-center">
+          <div className="flex items-center justify-center">
             <Lottie animationData={loader} loop className="h-64 w-64" />
           </div>
         )}

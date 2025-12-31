@@ -567,9 +567,9 @@ const Dashboard = () => {
 
             <TabsContent value="applications" className="space-y-4">
               {loadingApplications ? (
-                <p className="text-muted-foreground">
-                  Loading your applications...
-                </p>
+                <div className=" flex items-center justify-center">
+                  <Lottie animationData={loader} loop className="h-64 w-64" />
+                </div>
               ) : applications.length === 0 ? (
                 <Card>
                   <CardHeader>
@@ -679,9 +679,9 @@ const Dashboard = () => {
 
             <TabsContent value="My Requests" className="space-y-4">
               {loadingRequests ? (
-                <p className="text-muted-foreground">
-                  Loading adoption requests...
-                </p>
+                <div className="text-center text-muted-foreground flex items-center justify-center">
+                  <Lottie animationData={loader} loop className="h-64 w-64" />
+                </div>
               ) : adoptionRequests.length === 0 ? (
                 <Card>
                   <CardHeader>

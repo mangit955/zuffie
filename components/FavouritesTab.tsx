@@ -8,6 +8,8 @@ import {
 } from "./ui/card";
 import { Button } from "./ui/button";
 import Image from "next/image";
+import Lottie from "lottie-react";
+import loader from "@/public/lottie/loader.json";
 
 type FavouriteWithPet = {
   id: string;
@@ -36,7 +38,11 @@ const FavoritesTab = memo(function FavoritesTab({
   onViewPet,
 }: FavoritesTabProps) {
   if (loadingFavorite) {
-    return <p className="text-muted-foreground">Loading your favorite Pets</p>;
+    return (
+      <div className="flex items-center justify-center">
+        <Lottie animationData={loader} loop className="h-64 w-64" />
+      </div>
+    );
   }
 
   if (favorite.length === 0) {
