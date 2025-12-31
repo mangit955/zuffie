@@ -44,7 +44,7 @@ const Adopt = () => {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const petId = searchParams.get("petId");
+  const petSlug = searchParams.get("petId");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,6 +52,17 @@ const Adopt = () => {
 
     try {
       const supabase = createSupabaseClient();
+
+      // Validate if pet slug is provided
+      if (!petSlug) {
+        toast({
+          title: "Missing Pet Information",
+          description: "Please select a pet to adopt",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
 
       // optional: get loggedin user id from supabase
       const {
@@ -70,9 +81,55 @@ const Adopt = () => {
         return;
       }
 
-      const { error } = await supabase.from("adoption_applications").insert({
+      // Verify the pet exists before inserting
+      // Log the petSlug to help debug
+      console.log("Verifying pet with slug:", petSlug);
+
+      const { data: petData, error: petError } = await supabase
+        .from("pets")
+        .select("id")
+        .eq("slug", petSlug.toLowerCase())
+        .maybeSingle();
+
+      // Enhanced error logging
+      if (petError) {
+        console.error("Error verifying pet:", petError);
+        console.error("Error object keys:", Object.keys(petError));
+        console.error("Error stringified:", JSON.stringify(petError, null, 2));
+
+        // If it's an RLS error (empty object), we'll still try to insert
+        // The insert will fail with a proper error if the pet doesn't exist
+        const isRLSError = Object.keys(petError).length === 0;
+
+        if (!isRLSError) {
+          toast({
+            title: "Error",
+            description: "Could not verify pet information. Please try again.",
+            variant: "destructive",
+          });
+          setSubmitting(false);
+          return;
+        }
+        // If RLS error, continue - the insert will validate the pet exists
+        console.warn(
+          "Pet verification failed (possibly RLS), proceeding with insert..."
+        );
+      }
+
+      if (!petData) {
+        toast({
+          title: "Pet Not Found",
+          description: "The selected pet could not be found.",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
+      // Prepare insert data
+      const insertData = {
         user_id: user?.id ?? null,
-        pet_uuid: petId,
+        pet_uuid: petData.id,
         full_name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
@@ -80,28 +137,61 @@ const Adopt = () => {
         housing_type: formData.housingType,
         has_yard: formData.hasYard,
         has_other_pets: formData.hasOtherPets,
-        experience: formData.experience,
+        experience: formData.experience || null,
         why_adopt: formData.whyAdopt,
         status: "pending",
-      });
+      };
+
+      console.log("Inserting adoption application with data:", insertData);
+
+      const { data: insertedData, error } = await supabase
+        .from("adoption_applications")
+        .insert(insertData)
+        .select();
 
       if (error) {
         console.error("Supabase insert error:", error);
+        console.error("Error object keys:", Object.keys(error));
+        console.error("Error stringified:", JSON.stringify(error, null, 2));
         console.error("Error details:", {
           message: error.message || "No message",
           details: error.details || "No details",
           hint: error.hint || "No hint",
           code: error.code || "No code",
         });
+        console.error("Insert data that failed:", insertData);
+
+        // Provide more helpful error messages
+        let errorMessage = "Please try again in a moment.";
+        if (error.message) {
+          errorMessage = error.message;
+        } else if (error.details) {
+          errorMessage = error.details;
+        } else if (error.hint) {
+          errorMessage = error.hint;
+        } else if (error.code) {
+          // Common error codes
+          if (error.code === "23503") {
+            errorMessage =
+              "The selected pet could not be found. Please try selecting a different pet.";
+          } else if (error.code === "23505") {
+            errorMessage =
+              "You have already submitted an application for this pet.";
+          } else {
+            errorMessage = `Database error (${error.code}). Please contact support.`;
+          }
+        }
 
         toast({
           title: "Could not submit application",
-          description: error.message || "Please try again in a moment.",
+          description: errorMessage,
           variant: "destructive",
         });
         setSubmitting(false);
         return;
       }
+
+      console.log("Successfully inserted adoption application:", insertedData);
 
       toast({
         title: "Application Submitted!",

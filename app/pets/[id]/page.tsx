@@ -104,7 +104,7 @@ const PetDetail = () => {
   const isOwner = currentUserId && pet && pet.owner_id === currentUserId;
 
   const handleAdopt = () => {
-    router.push(`/adopt?petId=${petId}`);
+    router.push(`/adopt?petId=${pet.id}`);
     toast({
       title: "Adoption Request",
       description: "Please fill out the adoption form to proceed.",
