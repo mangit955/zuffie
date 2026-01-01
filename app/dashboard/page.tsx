@@ -101,6 +101,9 @@ const Dashboard = () => {
   const [processingRequest, setProcessingRequest] = useState<string | null>(
     null
   );
+  const [processindApplication, setProcessingApplication] = useState<
+    string | null
+  >(null);
 
   // 1) Load current user
   useEffect(() => {
@@ -518,6 +521,43 @@ const Dashboard = () => {
     }
   };
 
+  const handleCancleApplication = async (applicationId: string) => {
+    if (!user) return;
+
+    setProcessingApplication(applicationId);
+
+    try {
+      //update status to canclled
+      const { error } = await supabase
+        .from("adoption_applications")
+        .delete()
+        .eq("id", applicationId)
+        .eq("user_id", user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      //update the applications list - filter out canclled application
+      setApplications((prev) => prev.filter((app) => app.id !== applicationId));
+
+      toast({
+        title: "Application cancelled",
+        description:
+          "Your adoption application has been cancelled successfully.",
+      });
+    } catch (error) {
+      console.error("Error cancelling application", error);
+      toast({
+        title: "Error cancelling application",
+        description: "Failed to cancel the application.",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingApplication(null);
+    }
+  };
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -607,6 +647,8 @@ const Dashboard = () => {
                               ? "default"
                               : app.status.toLowerCase() === "rejected"
                               ? "destructive"
+                              : app.status.toLowerCase() === "cancelled"
+                              ? "destructive"
                               : "secondary"
                           }
                         >
@@ -648,6 +690,22 @@ const Dashboard = () => {
                         <span className="font-medium">Why adopt:</span>{" "}
                         {app.why_adopt}
                       </p>
+
+                      {/* Add cancel button for pending applications */}
+                      {app.status.toLowerCase() === "pending" && (
+                        <div className="pt-4 border-t mt-4">
+                          <Button
+                            onClick={() => handleCancleApplication(app.id)}
+                            size="lg"
+                            disabled={processindApplication === app.id}
+                            className="flex w-full justify-center cursor-pointer"
+                          >
+                            {processindApplication === app.id
+                              ? "Cancelling..."
+                              : "Cancel Application"}
+                          </Button>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 ))
