@@ -65,7 +65,7 @@ const VetsPage = () => {
       .eq("city", city.trim())
       .eq("is_active", true)
       .order("rating", { ascending: false })
-      .limit(5);
+      .limit(6);
 
     if (error) {
       console.error(error);
