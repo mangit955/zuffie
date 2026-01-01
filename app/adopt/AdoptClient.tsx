@@ -1,6 +1,5 @@
 "use client";
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +25,7 @@ import { useProtectRoute } from "@/hooks/useProtectRoute";
 import { createSupabaseClient } from "@/lib/supabaseClient";
 import Lottie from "lottie-react";
 import loaderAnimation from "@/public/lottie/loader.json";
+import Loggedin_Navbar from "@/components/loggedin_Navbar";
 
 const Adopt = () => {
   const { loading } = useProtectRoute();
@@ -83,12 +83,12 @@ const Adopt = () => {
 
       // Verify the pet exists before inserting
       // Log the petSlug to help debug
-      console.log("Verifying pet with slug:", petSlug);
+      console.log("Verifying pet with id:", petSlug);
 
       const { data: petData, error: petError } = await supabase
         .from("pets")
         .select("id")
-        .eq("slug", petSlug.toLowerCase())
+        .eq("id", petSlug)
         .maybeSingle();
 
       // Enhanced error logging
@@ -221,7 +221,7 @@ const Adopt = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <Loggedin_Navbar />
 
       <section className="py-12 px-8 md:px-16 lg:px-24">
         <div className="max-w-3xl mx-auto">
@@ -245,7 +245,9 @@ const Adopt = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name *</Label>
+                    <Label htmlFor="fullName">
+                      Full Name <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="fullName"
                       required
@@ -256,7 +258,9 @@ const Adopt = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="email">
+                      Email <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="email"
                       type="email"
@@ -271,7 +275,9 @@ const Adopt = () => {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Label htmlFor="phone">
+                      Phone Number <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -283,7 +289,9 @@ const Adopt = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="housingType">Housing Type *</Label>
+                    <Label htmlFor="housingType">
+                      Housing Type <span className="text-red-500">*</span>
+                    </Label>
                     <Select
                       value={formData.housingType}
                       onValueChange={(value) =>
@@ -303,7 +311,9 @@ const Adopt = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address">Address *</Label>
+                  <Label htmlFor="address">
+                    Address <span className="text-red-500">*</span>
+                  </Label>
                   <Input
                     id="address"
                     required
@@ -360,7 +370,10 @@ const Adopt = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="whyAdopt">Why do you want to adopt? *</Label>
+                  <Label htmlFor="whyAdopt">
+                    Why do you want to adopt?{" "}
+                    <span className="text-red-500">*</span>
+                  </Label>
                   <Textarea
                     id="whyAdopt"
                     required
