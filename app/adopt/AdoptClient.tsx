@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,7 @@ import Loggedin_Navbar from "@/components/loggedin_Navbar";
 const Adopt = () => {
   const { loading } = useProtectRoute();
   const [submitting, setSubmitting] = useState(false);
+  const [loadingUserData, setLoadingUserData] = useState(true);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -45,6 +46,58 @@ const Adopt = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const petSlug = searchParams.get("petId");
+
+  // Auto-fill form with user's previous application data or email
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        const supabase = createSupabaseClient();
+
+        //Get authenticated user
+        const {
+          data: { user },
+          error: useError,
+        } = await supabase.auth.getUser();
+
+        if (useError || !user) {
+          console.error("Error loading user:", useError);
+          setLoadingUserData(false);
+          return;
+        }
+
+        //Set email from auth (always available)
+        setFormData((prev) => ({
+          ...prev,
+          email: user.email || "",
+        }));
+
+        //Try to get user's most recent application
+        const { data: recentApplication, error: appError } = await supabase
+          .from("adoption_applications")
+          .select("full_name, email, phone, address")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!appError && recentApplication) {
+          //Pre-fill form with data from most recent application
+          setFormData((prev) => ({
+            ...prev,
+            fullName: recentApplication.full_name || prev.fullName,
+            email: recentApplication.email || user.email || prev.email,
+            phone: recentApplication.phone || prev.phone,
+            address: recentApplication.address || prev.address,
+          }));
+        }
+      } catch (err) {
+        console.error("Error loading user data:", err);
+      } finally {
+        setLoadingUserData(false);
+      }
+    };
+    loadUserData();
+  }, []); //Run once when component mount
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
