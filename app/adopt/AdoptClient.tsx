@@ -26,11 +26,33 @@ import { createSupabaseClient } from "@/lib/supabaseClient";
 import Lottie from "lottie-react";
 import loaderAnimation from "@/public/lottie/loader.json";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
+import { z } from "zod";
+
+//zod validation
+const adoptionSchema = z.object({
+  fullName: z.string().min(1, "Full Name is required"),
+  email: z.email(),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^(\+91[\-\s]?)?[6-9]\d{9}$/, "Enter a valid Indian phone number"),
+  address: z.string().min(1, " Address is required"),
+  housingType: z.string().min(1, "Housing type is required"),
+  hasYard: z.boolean(),
+  hasOtherPets: z.boolean(),
+  experience: z.string().min(1, "Experience is required."),
+  whyAdopt: z.string().optional(),
+});
+const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^(\+91[\-\s]?)?[6-9]\d{9}$/, "Enter a valid Indian phone number");
 
 const Adopt = () => {
   const { loading } = useProtectRoute();
   const [submitting, setSubmitting] = useState(false);
   const [loadingUserData, setLoadingUserData] = useState(true);
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -179,19 +201,38 @@ const Adopt = () => {
         return;
       }
 
+      const parsed = adoptionSchema.safeParse(formData);
+
+      if (!parsed.success) {
+        const firstError = Object.values(
+          parsed.error.flatten().fieldErrors
+        )[0]?.[0];
+
+        toast({
+          title: "Invalid form data",
+          description: firstError || "Please check your inputs.",
+          variant: "destructive",
+        });
+        setSubmitting(false);
+        return;
+      }
+
       // Prepare insert data
+      //using parsed data
+      const validatedData = parsed.data;
+
       const insertData = {
         user_id: user?.id ?? null,
         pet_uuid: petData.id,
-        full_name: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        housing_type: formData.housingType,
-        has_yard: formData.hasYard,
-        has_other_pets: formData.hasOtherPets,
-        experience: formData.experience || null,
-        why_adopt: formData.whyAdopt,
+        full_name: validatedData.fullName,
+        email: validatedData.email,
+        phone: validatedData.phone,
+        address: validatedData.address,
+        housing_type: validatedData.housingType,
+        has_yard: validatedData.hasYard,
+        has_other_pets: validatedData.hasOtherPets,
+        experience: validatedData.experience || null,
+        why_adopt: validatedData.whyAdopt,
         status: "pending",
       };
 
@@ -336,10 +377,37 @@ const Adopt = () => {
                       type="tel"
                       required
                       value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setFormData({ ...formData, phone: e.target.value });
+
+                        // Remove non-digits for length check
+                        const digitsOnly = value.replace(/\D/g, "");
+
+                        // Length-based validation (UX-friendly)
+                        if (digitsOnly.length < 10) {
+                          setPhoneError("Phone number must be 10 digits");
+                          return;
+                        }
+
+                        if (digitsOnly.length > 10) {
+                          setPhoneError("Phone number cannot exceed 10 digits");
+                          return;
+                        }
+                        //Zod validation (final authority)
+                        const result = phoneSchema.safeParse(value);
+
+                        if (!result.success) {
+                          setPhoneError(result.error.issues[0].message);
+                        } else {
+                          setPhoneError(null);
+                        }
+                      }}
+                      className={phoneError ? "border-red-500 " : ""}
                     />
+                    {phoneError && (
+                      <p className="text-sm text-red-500">{phoneError}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="housingType">
