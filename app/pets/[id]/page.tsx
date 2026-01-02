@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Share2, MapPin } from "lucide-react";
+import { Share2, MapPin, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { useEffect, useState } from "react";
@@ -136,19 +136,31 @@ const PetDetail = () => {
       try {
         await navigator.share({
           title: `Adopt ${pet.name}`,
-          text: `Meet ${pet.name}`,
           url: shareUrl,
         });
         return;
-      } catch (err) {
+      } catch {
         return;
       }
     }
+
     // fallback: copy to clipboard
     await navigator.clipboard.writeText(shareUrl);
     toast({
       title: "Link copied",
       description: " You can now share this pet with others",
+    });
+  };
+
+  const handleCopyLink = async () => {
+    if (!pet) return;
+
+    const shareUrl = `${window.location.origin}/pets/${pet.slug}`;
+    await navigator.clipboard.writeText(shareUrl);
+
+    toast({
+      title: "Link copied",
+      description: "Link copied to clipboard",
     });
   };
 
@@ -173,11 +185,27 @@ const PetDetail = () => {
               <div className="absolute top-4 right-4 flex gap-2">
                 <Button
                   size="icon"
-                  variant="secondary"
-                  className="rounded-full cursor-pointer shadow-sm"
+                  className="rounded-full cursor-pointer backdrop-blur-md
+    bg-white/30
+    border border-white/20
+    shadow-lg
+    hover:bg-white/40
+    transition"
                   onClick={handleShare}
                 >
                   <Share2 className="h-5 w-5" />
+                </Button>
+                <Button
+                  size="icon"
+                  onClick={handleCopyLink}
+                  className="rounded-full cursor-pointer backdrop-blur-md
+    bg-white/30
+    border border-white/20
+    shadow-lg
+    hover:bg-white/40
+    transition"
+                >
+                  <Copy />
                 </Button>
               </div>
             </div>
