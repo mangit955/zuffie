@@ -413,16 +413,28 @@ const NewPetPage = () => {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="color">Color</Label>
-                    <Input
-                      id="color"
+                    <Select
                       value={formData.color}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          color: e.target.value,
-                        }))
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, color: value }))
                       }
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pet colour" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Colors</SelectItem>
+                        <SelectItem value="white">White</SelectItem>
+                        <SelectItem value="black">Black</SelectItem>
+                        <SelectItem value="gray">Gray</SelectItem>
+                        <SelectItem value="cream">Cream</SelectItem>
+                        <SelectItem value="golden">Golden</SelectItem>
+                        <SelectItem value="brown">Brown</SelectItem>
+                        <SelectItem value="tan">Tan</SelectItem>
+                        <SelectItem value="beige">Beige</SelectItem>
+                        <SelectItem value="ginger">Ginger</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="location">Location</Label>
@@ -461,45 +473,59 @@ const NewPetPage = () => {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="health_status">Health Status</Label>
-                    <Input
-                      id="health_status"
-                      placeholder="Excellent / Good / Needs care"
+                    <Select
                       value={formData.health_status}
-                      onChange={(e) =>
+                      onValueChange={(value) =>
                         setFormData((prev) => ({
                           ...prev,
-                          health_status: e.target.value,
+                          health_status: value,
                         }))
                       }
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Overall health condition" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="excellent">Excellent</SelectItem>
+                        <SelectItem value="good">Good</SelectItem>
+                        <SelectItem value="needs care">Needs care</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="vaccinated">Vaccinated</Label>
-                    <Input
-                      id="vaccinated"
-                      placeholder="Yes / No / Partial"
+                    <Select
                       value={formData.vaccinated}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          vaccinated: e.target.value,
-                        }))
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, vaccinated: value }))
                       }
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Vaccination status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                        <SelectItem value="partial">Partial</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="neutered">Neutered</Label>
-                    <Input
-                      id="neutered"
-                      placeholder="Yes / No"
+                    <Select
                       value={formData.neutered}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          neutered: e.target.value,
-                        }))
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, neutered: value }))
                       }
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Neuter status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
