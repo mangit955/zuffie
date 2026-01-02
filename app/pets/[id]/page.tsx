@@ -42,6 +42,7 @@ const PetDetail = () => {
   const [pet, setPet] = useState<Pet | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   //check session
   useEffect(() => {
@@ -158,11 +159,15 @@ const PetDetail = () => {
     const shareUrl = `${window.location.origin}/pets/${pet.slug}`;
     await navigator.clipboard.writeText(shareUrl);
 
-    toast({
-      title: "Link copied",
-      description: "Link copied to clipboard",
-    });
+    setCopied(true);
+
+    //reset after 3 sec
+    setTimeout(() => {
+      setCopied(false);
+    }, 3000);
   };
+
+  const showCopied = copied;
 
   return (
     <div className="min-h-screen bg-background">
@@ -196,16 +201,49 @@ const PetDetail = () => {
                   <Share2 className="h-5 w-5" />
                 </Button>
                 <Button
-                  size="icon"
                   onClick={handleCopyLink}
-                  className="rounded-full cursor-pointer backdrop-blur-md
-    bg-white/30
-    border border-white/20
-    shadow-lg
-    hover:bg-white/40
-    transition"
+                  className={`
+    h-10
+    ${showCopied ? "min-w-[88px] px-4" : "w-10 px-0"}
+    rounded-full cursor-pointer
+    backdrop-blur-md bg-white/30 hover:bg-white/40
+    border border-white/20 shadow-lg
+    transition-[width,padding] duration-400
+    ease-[cubic-bezier(0.16,1,0.3,1)]
+    relative flex items-center justify-center overflow-hidden
+  `}
                 >
-                  <Copy />
+                  <span
+                    className={`
+    absolute whitespace-nowrap
+    text-sm font-medium
+     transition-transform
+    duration-200
+    ease-[cubic-bezier(0.16,1,0.3,1)]
+    ${
+      copied
+        ? "opacity-100 translate-y-0 scale-100 delay-75"
+        : "opacity-0 translate-y-0.5 scale-95"
+    }
+  `}
+                  >
+                    Copied !
+                  </span>
+
+                  <span
+                    className={`
+     transition-transform
+    duration-200
+    ease-[cubic-bezier(0.16,1,0.3,1)]
+    ${
+      copied
+        ? "opacity-0 translate-y-[-0.5px] scale-95"
+        : "opacity-100 translate-y-0 scale-100 delay-75"
+    }
+  `}
+                  >
+                    <Copy className="h-5 w-5" />
+                  </span>
                 </Button>
               </div>
             </div>
