@@ -15,6 +15,7 @@ import loader from "@/public/lottie/loader.json";
 
 type Pet = {
   id: string;
+  slug: string;
   name: string;
   breed: string;
   age: string;
@@ -49,15 +50,13 @@ const PetDetail = () => {
         data: { session },
       } = await supabase.auth.getSession();
 
-      if (!session) {
-        router.push("/login");
-        return;
+      if (session) {
+        setCurrentUserId(session.user.id);
       }
-      setCurrentUserId(session.user.id); //store the current user Id
       setAuthChecked(true);
     };
     checkSession();
-  }, [router]);
+  }, []);
 
   //2) fetch pet by id from supabase
   useEffect(() => {
@@ -113,7 +112,7 @@ const PetDetail = () => {
     });
   };
 
-  if (loading || !pet) {
+  if (loading) {
     return (
       <div className=" min-h-screen bg-background">
         <Loggedin_Navbar />
@@ -123,6 +122,35 @@ const PetDetail = () => {
       </div>
     );
   }
+  if (!pet) {
+    return null;
+  }
+
+  const handleShare = async () => {
+    if (!pet) return;
+
+    const shareUrl = `${window.location.origin}/pets/${pet.slug}`;
+
+    //Native share (mobile-first)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Adopt ${pet.name}`,
+          text: `Meet ${pet.name}`,
+          url: shareUrl,
+        });
+        return;
+      } catch (err) {
+        return;
+      }
+    }
+    // fallback: copy to clipboard
+    await navigator.clipboard.writeText(shareUrl);
+    toast({
+      title: "Link copied",
+      description: " You can now share this pet with others",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -133,20 +161,21 @@ const PetDetail = () => {
           <div className="grid md:grid-cols-2 gap-8">
             {/* Pet Image */}
             <div className="relative">
-              <div className="w-full h-100 rounded-2xl bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
+              <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-linear-to-br from-secondary/30 to-primary/20">
                 <Image
                   src={pet.image_url || "/placeholder.jpg"}
                   alt={pet.name}
-                  width={300}
-                  height={300}
+                  fill
                   className="rounded-2xl object-cover"
+                  sizes="(min-width: 768px) 50vw, 100vw"
                 />
               </div>
               <div className="absolute top-4 right-4 flex gap-2">
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="rounded-full cursor-pointer"
+                  className="rounded-full cursor-pointer shadow-sm"
+                  onClick={handleShare}
                 >
                   <Share2 className="h-5 w-5" />
                 </Button>

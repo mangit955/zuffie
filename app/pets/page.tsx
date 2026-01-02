@@ -23,6 +23,7 @@ type DbPet = {
   id: string;
   name: string;
   breed: string;
+  color: string;
   age: string;
   gender: string;
   image_url: string;
@@ -34,6 +35,7 @@ const Pets = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterGender, setFilterGender] = useState("all");
+  const [filterColor, setFilterColor] = useState("all");
   const [pets, setPets] = useState<DbPet[]>([]);
   const [loadingPets, setLoadingPets] = useState(true);
   const [page, setPage] = useState(1);
@@ -104,7 +106,7 @@ const Pets = () => {
       // Filter out pets where is_adopted is true
       const { data, error } = await supabase
         .from("pets")
-        .select("id, name, breed, age, gender, image_url, type, slug")
+        .select("id, name, breed, color, age, gender, image_url, type, slug")
         .or("is_adopted.is.null,is_adopted.eq.false")
         .order("created_at", { ascending: false });
 
@@ -113,7 +115,7 @@ const Pets = () => {
         // If the column doesn't exist, fallback to loading all pets
         const { data: fallbackData, error: fallbackError } = await supabase
           .from("pets")
-          .select("id, name, breed, age, gender, image_url, type, slug")
+          .select("id, name, breed, color, age, gender, image_url, type, slug")
           .order("created_at", { ascending: false });
 
         if (fallbackError) {
@@ -141,7 +143,8 @@ const Pets = () => {
     const matchesType = filterType === "all" || pet.type === filterType;
     const matchesGender =
       filterGender === "all" || pet.gender.toLowerCase() === filterGender;
-    return matchesSearch && matchesType && matchesGender;
+    const matchesColor = filterColor === "all" || pet.color === filterColor;
+    return matchesSearch && matchesType && matchesGender && matchesColor;
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredPets.length / pageSize));
@@ -196,7 +199,7 @@ const Pets = () => {
               }}
             >
               <SelectTrigger className="w-[180px] bg-card ">
-                <SelectValue placeholder="Pet Type" />
+                <SelectValue placeholder="Pet type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
@@ -219,6 +222,30 @@ const Pets = () => {
                 <SelectItem value="all">All Genders</SelectItem>
                 <SelectItem value="male">Male</SelectItem>
                 <SelectItem value="female">Female</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filterColor}
+              onValueChange={(value) => {
+                setFilterColor(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-[180px] bg-card  ">
+                <SelectValue placeholder="Pet colour" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Colors</SelectItem>
+                <SelectItem value="white">White</SelectItem>
+                <SelectItem value="black">Black</SelectItem>
+                <SelectItem value="gray">Gray</SelectItem>
+                <SelectItem value="cream">Cream</SelectItem>
+                <SelectItem value="golden">Golden</SelectItem>
+                <SelectItem value="brown">Brown</SelectItem>
+                <SelectItem value="tan">Tan</SelectItem>
+                <SelectItem value="beige">Beige</SelectItem>
+                <SelectItem value="ginger">Ginger</SelectItem>
               </SelectContent>
             </Select>
           </div>

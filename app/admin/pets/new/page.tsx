@@ -294,7 +294,7 @@ const NewPetPage = () => {
                   </div> */}
                   <div className="space-y-2">
                     <Label htmlFor="name">
-                      Name <span className="text-red-500">*</span>
+                      Pet name <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="name"
@@ -310,7 +310,7 @@ const NewPetPage = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>
-                      Type <span className="text-red-500">*</span>
+                      Pet type <span className="text-red-500">*</span>
                     </Label>
                     <Select
                       value={formData.type}
