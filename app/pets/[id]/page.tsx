@@ -107,10 +107,6 @@ const PetDetail = () => {
     if (!pet) return;
 
     router.push(`/adopt?petId=${pet.id}`);
-    toast({
-      title: "Adoption Request",
-      description: "Please fill out the adoption form to proceed.",
-    });
   };
 
   if (loading) {
