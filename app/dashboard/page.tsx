@@ -11,11 +11,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, FileText, MessageCircle } from "lucide-react";
+import { Heart, FileText, MessageCircle, Bell } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import FavoritesTab from "@/components/FavouritesTab";
 import Lottie from "lottie-react";
@@ -80,6 +80,18 @@ type FavouriteWithPet = {
     slug: string;
   } | null;
 };
+
+type Notification = {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  message: string;
+  read: boolean;
+  metadata: any;
+  created_at: string;
+};
+
 const supabase = createSupabaseClient();
 
 const Dashboard = () => {
@@ -106,6 +118,9 @@ const Dashboard = () => {
   const [processindApplication, setProcessingApplication] = useState<
     string | null
   >(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   // 1) Load current user
   useEffect(() => {
@@ -560,6 +575,94 @@ const Dashboard = () => {
     loadAdoptionRequests();
   }, [user, toast]);
 
+  //5) to load notifications
+  useEffect(() => {
+    if (!user) return;
+
+    const loadNotifications = async () => {
+      setLoadingNotifications(true);
+
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) {
+        console.error("Error loading notifications:", error);
+      } else {
+        setNotifications(data || []);
+        setUnreadCount(data?.filter((n) => !n.read).length || 0);
+      }
+
+      setLoadingNotifications(false);
+    };
+    loadNotifications();
+
+    // Set up real-time subscription for new notifications
+    const channel = supabase
+      .channel("notifications")
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          const newNotification = payload.new as Notification;
+          setNotifications((prev) => [newNotification, ...prev]);
+          setUnreadCount((prev) => prev + 1);
+
+          // Show toast notification
+          toast({
+            title: newNotification.title,
+            description: newNotification.message,
+            variant: "default",
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, toast]);
+
+  // Function to mark notification as read
+  const markAsRead = async (notificationId: string) => {
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read: true })
+      .eq("id", notificationId);
+
+    if (!error) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+  };
+
+  // Function to mark all as read
+  const markAllAsRead = async () => {
+    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+
+    if (unreadIds.length === 0) return;
+
+    const { error } = await supabase
+      .from("notifications")
+      .update({ read: true })
+      .in("id", unreadIds);
+
+    if (!error) {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      setUnreadCount(0);
+    }
+  };
+
   const totalAppPages = Math.max(
     1,
     Math.ceil(applications.length / appPageSize)
@@ -627,8 +730,31 @@ const Dashboard = () => {
         throw updateError;
       }
 
-      // 2. Mark the pet as adopted by updating is_adopted field
-      // Note: You'll need to add 'is_adopted' (boolean) and 'adopted_by' (uuid) columns to your pets table in Supabase
+      // 2. Create notification for the applicant
+      if (request.user_id) {
+        const { error: notificationError } = await supabase
+          .from("notifications")
+          .insert({
+            user_id: request.user_id,
+            type: "adoption_approved",
+            title: "🎉 Adoption Request Approved!",
+            message: `Congratulations! Your adoption request for ${
+              request.pets?.name || "the pet"
+            } has been approved. The pet owner will contact you soon.`,
+            metadata: {
+              pet_id: request.pet_uuid,
+              pet_name: request.pets?.name,
+              application_id: request.id,
+            },
+          });
+
+        if (notificationError) {
+          console.error("Failed to create notification:", notificationError);
+          // Don't throw - notification failure shouldn't block the approval
+        }
+      }
+
+      // 3. Mark the pet as adopted by updating is_adopted field
       const { error: petUpdateError } = await supabase
         .from("pets")
         .update({
@@ -672,7 +798,7 @@ const Dashboard = () => {
 
       toast({
         title: "Request accepted!",
-        description: `The adoption request for ${request.pets.name} has been accepted. The pet will be removed from listings.`,
+        description: `The adoption request for ${request.pets.name} has been accepted.`,
       });
     } catch (error) {
       console.error("Error accepting request:", error);
@@ -752,7 +878,7 @@ const Dashboard = () => {
           </div>
 
           <Tabs defaultValue="favorites" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="favorites">
                 <Heart className="mr-2 h-4 w-4" />
                 Favorites
@@ -765,6 +891,15 @@ const Dashboard = () => {
               <TabsTrigger value="My Requests">
                 <MessageCircle className="mr-2 h-4 w-4" />
                 My Requests
+              </TabsTrigger>
+              <TabsTrigger value="Notifications" className="relative">
+                <Bell className="mr-2 h-4 w-4" />
+                Notifications
+                {unreadCount > 0 && (
+                  <span className="ml-2 rounded-full bg-red-500 text-white text-xs px-2 py-0.5">
+                    {unreadCount}
+                  </span>
+                )}
               </TabsTrigger>
             </TabsList>
 
@@ -1043,6 +1178,70 @@ const Dashboard = () => {
                     </CardContent>
                   </Card>
                 ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="Notifications" className="space-y-4">
+              {loadingNotifications ? (
+                <div className="text-center text-muted-foreground flex items-center justify-center">
+                  <Lottie animationData={loader} loop className="h-64 w-64" />
+                </div>
+              ) : notifications.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6 text-center text-muted-foreground">
+                    <Bell className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                    <p>No notifications yet</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <>
+                  {unreadCount > 0 && (
+                    <div className="flex justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={markAllAsRead}
+                        className="hover:bg-gray-200"
+                      >
+                        Mark all as read
+                      </Button>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    {notifications.map((notification) => (
+                      <Card
+                        key={notification.id}
+                        className={`cursor-pointer transition-colors ${
+                          !notification.read
+                            ? "bg-blue-100  border-blue-300"
+                            : ""
+                        }`}
+                        onClick={() => markAsRead(notification.id)}
+                      >
+                        <CardHeader>
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <CardTitle className="text-lg">
+                                {notification.title}
+                              </CardTitle>
+                              <CardDescription className="mt-2">
+                                {notification.message}
+                              </CardDescription>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                {new Date(
+                                  notification.created_at
+                                ).toLocaleString()}
+                              </p>
+                            </div>
+                            {!notification.read && (
+                              <div className="h-2 w-2 rounded-full bg-blue-500 ml-2 mt-2" />
+                            )}
+                          </div>
+                        </CardHeader>
+                      </Card>
+                    ))}
+                  </div>
+                </>
               )}
             </TabsContent>
           </Tabs>
