@@ -22,10 +22,10 @@ import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
 import { createSupabaseClient } from "@/lib/supabaseClient";
 import Image from "next/image";
-import { AdoptionApplication } from "@/src/domain/adoptions/types";
-import { AdoptionApplicationWithPet } from "@/src/domain/adoptions/types";
-import { FavouriteWithPet } from "@/src/domain/adoptions/types";
-import { Notification } from "@/src/domain/notifications/types";
+import { AdoptionApplication } from "@/domain/adoptions/types";
+import { AdoptionApplicationWithPet } from "@/domain/adoptions/types";
+import { FavouriteWithPet } from "@/domain/adoptions/types";
+import { Notification } from "@/domain/notifications/types";
 
 const supabase = createSupabaseClient();
 

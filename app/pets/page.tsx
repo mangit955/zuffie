@@ -18,7 +18,7 @@ import loader from "@/public/lottie/loader.json";
 import catLoader from "@/public/lottie/catLoader.json";
 import type { User } from "@supabase/supabase-js";
 import { createSupabaseClient } from "@/lib/supabaseClient";
-import { DbPet } from "@/src/domain/pets/types";
+import { DbPet } from "@/domain/pets/types";
 
 const Pets = () => {
   const [searchTerm, setSearchTerm] = useState("");

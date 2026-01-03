@@ -12,7 +12,7 @@ import Image from "next/image";
 import { createSupabaseClient } from "@/lib/supabaseClient";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
-import { Pet } from "@/src/domain/pets/types";
+import { Pet } from "@/domain/pets/types";
 
 const supabase = createSupabaseClient();
 const PetDetail = () => {
