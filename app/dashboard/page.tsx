@@ -91,7 +91,9 @@ const Dashboard = () => {
   const [adoptionRequests, setAdoptionRequests] = useState<
     AdoptionApplicationWithPet[]
   >([]);
-  const [applications, setApplications] = useState<AdoptionApplication[]>([]);
+  const [applications, setApplications] = useState<
+    AdoptionApplicationWithPet[]
+  >([]);
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [loadingApplications, setLoadingApplications] = useState(true);
   const [favorite, setFavorite] = useState<FavouriteWithPet[]>([]);
@@ -137,17 +139,149 @@ const Dashboard = () => {
     const loadApplications = async () => {
       setLoadingApplications(true);
 
-      const { data, error } = await supabase
+      // Try nested query first, fallback to manual join if foreign key isn't configured
+      let data: AdoptionApplicationWithPet[] | null = null;
+      let error: { message?: string; details?: string } | null = null;
+
+      // First, try with nested query
+      const { data: nestedData, error: nestedError } = await supabase
         .from("adoption_applications")
-        .select("*")
+        .select(
+          `
+          id,
+          user_id,
+          pet_uuid,
+          full_name,
+          email,
+          phone,
+          address,
+          housing_type,
+          has_yard,
+          has_other_pets,
+          experience,
+          why_adopt,
+          status,
+          created_at,
+          pets (
+            id,
+            name,
+            breed,
+            age,
+            gender,
+            image_url
+          )
+        `
+        )
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
+      // If nested query fails (likely due to missing foreign key), do manual join
+      if (nestedError) {
+        console.warn("Nested query failed, using manual join:", nestedError);
+
+        // Fetch applications without nested query
+        const { data: appsData, error: appsError } = await supabase
+          .from("adoption_applications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (appsError) {
+          error = appsError;
+        } else if (appsData && appsData.length > 0) {
+          // Get unique pet UUIDs from applications
+          const petUuids = [
+            ...new Set(
+              appsData.map((app: AdoptionApplication) => app.pet_uuid)
+            ),
+          ];
+
+          // Fetch pets separately
+          const { data: petsData, error: petsError } = await supabase
+            .from("pets")
+            .select("id, name, breed, age, gender, image_url")
+            .in("id", petUuids);
+
+          if (petsError) {
+            error = petsError;
+          } else {
+            // Create a map of pet data by id
+            const petsMap = new Map(
+              (petsData || []).map(
+                (pet: {
+                  id: string;
+                  name: string;
+                  breed: string;
+                  age: string;
+                  gender: string;
+                  image_url: string;
+                }) => [pet.id, pet]
+              )
+            );
+
+            // Combine applications with pet data
+            data = appsData.map((app: AdoptionApplication) => ({
+              ...app,
+              pets: petsMap.get(app.pet_uuid) || null,
+            }));
+          }
+        } else {
+          data = [];
+        }
+      } else {
+        // Nested query succeeded - normalize the data
+        if (nestedData) {
+          data = nestedData.map(
+            (
+              req: {
+                pets?:
+                  | {
+                      id: string;
+                      name: string;
+                      breed: string;
+                      age: string;
+                      gender: string;
+                      image_url: string;
+                    }[]
+                  | {
+                      id: string;
+                      name: string;
+                      breed: string;
+                      age: string;
+                      gender: string;
+                      image_url: string;
+                    }
+                  | null;
+              } & AdoptionApplication
+            ): AdoptionApplicationWithPet => {
+              const pets = Array.isArray(req.pets)
+                ? req.pets[0] ?? null
+                : req.pets ?? null;
+              return {
+                ...req,
+                pets: pets as {
+                  id: string;
+                  name: string;
+                  breed: string;
+                  age: string;
+                  gender: string;
+                  image_url: string;
+                } | null,
+              };
+            }
+          );
+        } else {
+          data = [];
+        }
+      }
+
       if (error) {
         console.error("Error fetching applications:", error);
+        const errorMessage =
+          error.message || error.details || JSON.stringify(error);
         toast({
           title: "Error loading applications",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive",
         });
       } else {
@@ -197,10 +331,37 @@ const Dashboard = () => {
         });
       } else {
         const normalizedFavorites: FavouriteWithPet[] = (data || []).map(
-          (fav: any) => ({
+          (fav: {
+            id: string;
+            user_id: string | null;
+            pet_uuid: string;
+            created_at: string;
+            pets?:
+              | {
+                  id: string;
+                  name: string;
+                  breed: string;
+                  age: string;
+                  gender: string;
+                  image_url: string;
+                  slug: string;
+                }[]
+              | {
+                  id: string;
+                  name: string;
+                  breed: string;
+                  age: string;
+                  gender: string;
+                  image_url: string;
+                  slug: string;
+                }
+              | null;
+          }) => ({
             ...fav,
             // Supabase returns joined rows as arrays; grab first or null
-            pets: Array.isArray(fav.pets) ? fav.pets[0] ?? null : fav.pets,
+            pets: Array.isArray(fav.pets)
+              ? fav.pets[0] ?? null
+              : fav.pets ?? null,
           })
         );
 
@@ -433,11 +594,15 @@ const Dashboard = () => {
         title: "Request rejected",
         description: "The adoption request has been rejected and removed.",
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error rejecting request:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to reject the request.";
       toast({
         title: "Error rejecting request",
-        description: error.message || "Failed to reject the request.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -509,11 +674,15 @@ const Dashboard = () => {
         title: "Request accepted!",
         description: `The adoption request for ${request.pets.name} has been accepted. The pet will be removed from listings.`,
       });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error accepting request:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to accept the request.";
       toast({
         title: "Error accepting request",
-        description: error.message || "Failed to accept the request.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -630,30 +799,56 @@ const Dashboard = () => {
               ) : (
                 paginatedApplications.map((app) => (
                   <Card key={app.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle className="mb-2">
-                            Adoption Application
-                          </CardTitle>
-                          <CardDescription>
-                            Submitted on{" "}
-                            {new Date(app.created_at).toLocaleDateString()}
-                          </CardDescription>
+                    <CardHeader className="flex flex-row gap-4">
+                      {app.pets?.image_url && (
+                        <Image
+                          src={app.pets.image_url}
+                          alt={app.pets.name}
+                          width={80}
+                          height={80}
+                          className="h-20 w-20 rounded-md object-cover"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="mb-2">
+                              Adoption Application for{" "}
+                              {app.pets?.name ?? "Unknown Pet"}
+                            </CardTitle>
+                            <CardDescription>
+                              Submitted on{" "}
+                              {new Date(app.created_at).toLocaleDateString()}
+                            </CardDescription>
+                          </div>
+                          <Badge
+                            variant={
+                              app.status.toLowerCase() === "approved"
+                                ? "default"
+                                : app.status.toLowerCase() === "rejected"
+                                ? "destructive"
+                                : app.status.toLowerCase() === "cancelled"
+                                ? "destructive"
+                                : "secondary"
+                            }
+                          >
+                            {app.status}
+                          </Badge>
                         </div>
-                        <Badge
-                          variant={
-                            app.status.toLowerCase() === "approved"
-                              ? "default"
-                              : app.status.toLowerCase() === "rejected"
-                              ? "destructive"
-                              : app.status.toLowerCase() === "cancelled"
-                              ? "destructive"
-                              : "secondary"
-                          }
-                        >
-                          {app.status}
-                        </Badge>
+                        {app.pets && (
+                          <div className="mt-2 text-sm text-muted-foreground">
+                            <p>
+                              <span className="font-medium">Pet:</span>{" "}
+                              {app.pets.name} - {app.pets.breed}
+                            </p>
+                            <p>
+                              <span className="font-medium">Age:</span>{" "}
+                              {app.pets.age} |{" "}
+                              <span className="font-medium">Gender:</span>{" "}
+                              {app.pets.gender}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2">
@@ -674,7 +869,7 @@ const Dashboard = () => {
                       <p>
                         <span className="font-medium">Housing Type:</span>{" "}
                         {app.housing_type}
-                        {app.has_yard ? "(Has yard)" : " "}
+                        {app.has_yard ? " (Has yard)" : ""}
                       </p>
                       <p>
                         <span className="font-medium">Other Pets:</span>{" "}
