@@ -12,25 +12,7 @@ import Image from "next/image";
 import { createSupabaseClient } from "@/lib/supabaseClient";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
-
-type Pet = {
-  id: string;
-  slug: string;
-  name: string;
-  breed: string;
-  age: string;
-  gender: string;
-  weight: string | null;
-  color: string | null;
-  location: string | null;
-  description: string | null;
-  health_status: string | null;
-  vaccinated: string | null;
-  neutered: string | null;
-  personality: string[] | null;
-  image_url: string | null;
-  owner_id: string | null;
-};
+import { Pet } from "@/src/domain/pets/types";
 
 const supabase = createSupabaseClient();
 const PetDetail = () => {

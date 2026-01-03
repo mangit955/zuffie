@@ -15,82 +15,17 @@ import { Heart, FileText, MessageCircle, Bell } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import FavoritesTab from "@/components/FavouritesTab";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
 import { createSupabaseClient } from "@/lib/supabaseClient";
 import Image from "next/image";
-
-type AdoptionApplication = {
-  id: string;
-  user_id: string | null;
-  pet_uuid: string;
-  full_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  housing_type: string;
-  has_yard: boolean;
-  has_other_pets: boolean;
-  experience: string | null;
-  why_adopt: string;
-  status: string;
-  created_at: string;
-};
-
-type AdoptionApplicationWithPet = {
-  id: string;
-  user_id: string | null;
-  pet_uuid: string;
-  full_name: string;
-  email: string;
-  phone: string;
-  address: string;
-  housing_type: string;
-  has_yard: boolean;
-  has_other_pets: boolean;
-  experience: string | null;
-  why_adopt: string;
-  status: string;
-  created_at: string;
-  pets: {
-    id: string;
-    name: string;
-    breed: string;
-    age: string;
-    gender: string;
-    image_url: string;
-  } | null;
-};
-
-type FavouriteWithPet = {
-  id: string;
-  user_id: string | null;
-  pet_uuid: string;
-  created_at: string;
-  pets: {
-    id: string;
-    name: string;
-    breed: string;
-    age: string;
-    gender: string;
-    image_url: string;
-    slug: string;
-  } | null;
-};
-
-type Notification = {
-  id: string;
-  user_id: string;
-  type: string;
-  title: string;
-  message: string;
-  read: boolean;
-  metadata: any;
-  created_at: string;
-};
+import { AdoptionApplication } from "@/src/domain/adoptions/types";
+import { AdoptionApplicationWithPet } from "@/src/domain/adoptions/types";
+import { FavouriteWithPet } from "@/src/domain/adoptions/types";
+import { Notification } from "@/src/domain/notifications/types";
 
 const supabase = createSupabaseClient();
 
