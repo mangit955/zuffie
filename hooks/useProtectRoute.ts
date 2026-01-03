@@ -6,23 +6,27 @@ import { createSupabaseClient } from "@/lib/supabaseClient";
 export function useProtectRoute() {
   const supabase = createSupabaseClient();
   const router = useRouter();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const checksession = async () => {
+    const checkSession = async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
       if (!session) {
-        router.push("/login");
-      } else {
-        setUser(session.user);
         setLoading(false);
+        router.push("/login");
+        return;
       }
+
+      setUser(session.user);
+      setLoading(false);
     };
-    checksession();
+
+    checkSession();
   }, [supabase, router]);
 
   return { user, loading };
