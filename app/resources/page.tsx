@@ -11,25 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, Video, FileText } from "lucide-react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { createSupabaseClient } from "@/lib/supabaseClient";
+import { useProtectRoute } from "@/hooks/useProtectRoute";
 
 const Resources = () => {
   const router = useRouter();
-  const supabase = createSupabaseClient();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push("/login");
-      }
-    };
-    checkSession();
-  }, [supabase, router]);
+  useProtectRoute();
 
   const articles = [
     {

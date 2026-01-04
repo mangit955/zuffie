@@ -4,26 +4,13 @@ import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { createSupabaseClient } from "@/lib/supabaseClient";
+import { useProtectRoute } from "@/hooks/useProtectRoute";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 
 const FirstTimePetOwnerPage = () => {
   const router = useRouter();
-  const supabase = createSupabaseClient();
 
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push("/login");
-      }
-    };
-    checkSession();
-  }, [supabase, router]);
+  useProtectRoute();
 
   return (
     <div className="min-h-screen bg-background">

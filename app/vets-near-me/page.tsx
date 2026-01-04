@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Loggedin_Navbar from "@/components/loggedin_Navbar";
 import {
   Card,
@@ -13,45 +13,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Phone, Star, AlertTriangle } from "lucide-react";
 import { createSupabaseClient } from "@/lib/supabaseClient";
-import { useRouter } from "next/navigation";
 import Lottie from "lottie-react";
 import loader from "@/public/lottie/loader.json";
-
-type Vet = {
-  id: string;
-  name: string;
-  city: string;
-  area: string | null;
-  address: string | null;
-  phone: string | null;
-  services: string[];
-  emergency_available: boolean;
-  rating: number | null;
-  total_reviews: number | null;
-};
+import { Vet } from "@/domain/vets/types";
+import { useProtectRoute } from "@/hooks/useProtectRoute";
 
 const VetsPage = () => {
   const supabase = createSupabaseClient();
-  const router = useRouter();
 
   const [city, setCity] = useState("");
   const [vets, setVets] = useState<Vet[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  // 🔒 Protect route
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push("/login");
-      }
-    };
-    checkSession();
-  }, [supabase, router]);
+  // Protect route
+  useProtectRoute();
 
   const fetchVetsByCity = async () => {
     if (!city.trim()) return;
