@@ -588,7 +588,10 @@ const Adopt = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="experience">Pet Care Experience</Label>
+                    <Label htmlFor="experience">
+                      Pet Care Experience{" "}
+                      <span className="text-red-500">*</span>
+                    </Label>
                     <Textarea
                       id="experience"
                       placeholder="Tell us about your experience with pets..."
