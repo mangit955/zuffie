@@ -134,7 +134,12 @@ const PetCardComponent = ({
           variant="ghost"
           onClick={handleHeartClick}
           disabled={!user || loading}
-          className="absolute right-3 top-3 bg-card/40 hover:bg-card/60"
+          className="absolute right-3 top-3 rounded-full cursor-pointer backdrop-blur-md
+    bg-white/30
+    border border-white/20
+    shadow-lg
+    hover:bg-white/40
+    transition"
           aria-pressed={liked}
           title={
             !user
