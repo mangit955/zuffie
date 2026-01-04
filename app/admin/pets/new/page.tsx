@@ -82,7 +82,7 @@ const NewPetPage = () => {
   const supabase = createSupabaseClient();
   const router = useRouter();
   const { toast } = useToast();
-  const { loading: authLoading } = useProtectRoute(); // optional, if you use this elsewhere
+  const { loading: authLoading } = useProtectRoute();
   const [submitting, setSubmitting] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -247,7 +247,6 @@ const NewPetPage = () => {
         description: "View your pet in the adopt section. ",
       });
 
-      // Optional: go to pet detail page or dashboard
       router.push(`/pets/${generatedId}`);
     } catch (err) {
       console.error("Unexpected error creating pet:", err);

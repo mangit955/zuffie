@@ -8,11 +8,10 @@ import { Heart, MessageCircle, Share2, MapPin } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const PetDetail = () => {
-  // ✅ useParams and useRouter from Next.js
   const router = useRouter();
   const { toast } = useToast();
 
-  // 🐶 Mock pet data
+  //  Mock pet data
   const pet = {
     name: "Max",
     breed: "Golden Retriever",
@@ -45,7 +44,7 @@ const PetDetail = () => {
       <section className="py-12 px-8 md:px-16 lg:px-24">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-8">
-            {/* 🖼 Pet Image */}
+            {/* Pet Image */}
             <div className="relative">
               <div className="w-full h-96 rounded-2xl bg-linear-to-br from-secondary/30 to-primary/20 flex items-center justify-center">
                 <span className="text-[200px]">{pet.emoji}</span>
@@ -68,7 +67,7 @@ const PetDetail = () => {
               </div>
             </div>
 
-            {/* ℹ️ Pet Info */}
+            {/* Pet Info */}
             <div className="space-y-6">
               <div>
                 <h1 className="text-4xl font-bold text-foreground mb-2">

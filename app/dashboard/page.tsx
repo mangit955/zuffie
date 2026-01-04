@@ -46,7 +46,7 @@ const Dashboard = () => {
   const [favorite, setFavorite] = useState<FavouriteWithPet[]>([]);
   const [loadingFavorite, setLoadingFavorite] = useState(true);
   const [appPage, setAppPage] = useState(1);
-  const appPageSize = 2; //depending on how many cards you want per page
+  const appPageSize = 2;
   const [processingRequest, setProcessingRequest] = useState<string | null>(
     null
   );

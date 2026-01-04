@@ -45,7 +45,7 @@ export default function Index() {
       {/* Navbar based on auth */}
       <AuthNavbar />
 
-      {/* Optional: Hero section if you want to show it */}
+      {/* Optional: Hero section  */}
       <Hero />
 
       {/* Pet Listings Section */}

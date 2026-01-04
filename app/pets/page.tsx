@@ -30,7 +30,7 @@ const Pets = () => {
   const [page, setPage] = useState(1);
   const pageSize = 8;
 
-  // 🔹 new: user + favorite IDs
+  //  new: user + favorite IDs
   const [user, setUser] = useState<User | null>(null);
   const [favoritePetIds, setFavoritePetIds] = useState<Set<string>>(new Set());
   const [checkingAuth, setCheckingAuth] = useState(true);
@@ -262,7 +262,7 @@ const Pets = () => {
                   age={pet.age}
                   gender={pet.gender}
                   image={pet.image_url || "/placeholder.jpg"}
-                  // 🔹 new props for heart performance
+                  //  new props for heart performance
                   user={user}
                   initialLiked={favoritePetIds.has(pet.id)}
                 />
