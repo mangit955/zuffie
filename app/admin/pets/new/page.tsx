@@ -279,19 +279,6 @@ const NewPetPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* ID + Name */}
                 <div className="grid md:grid-cols-2 gap-4">
-                  {/* <div className="space-y-2">
-                    <Label htmlFor="id">
-                      Pet ID (optional – leave empty to auto-generate from name)
-                    </Label>
-                    <Input
-                      id="slug"
-                      value={formData.slug}
-                      onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, id: e.target.value }))
-                      }
-                      placeholder="max, luna, charlie..."
-                    />
-                  </div> */}
                   <div className="space-y-2">
                     <Label htmlFor="name">
                       Pet name <span className="text-red-500">*</span>
